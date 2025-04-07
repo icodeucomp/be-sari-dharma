@@ -16,6 +16,26 @@ class IndikatorMutu extends Model
         'file_pdf',
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->judul);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->judul);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -38,6 +58,7 @@ class IndikatorMutu extends Model
             'fields' => [
                 'judul' => 'string',
                 'file_pdf' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of judul)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -122,6 +143,23 @@ class IndikatorMutu extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/indikator-mutu/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'judul' => 'Indikator Mutu A',
+                            'slug' => 'indikator-mutu-a',
+                            'file_pdf' => 'uploads/indikator_mutu/20231001_1234.pdf',
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

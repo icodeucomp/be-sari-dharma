@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class LayananSpesialis extends Model
 {
@@ -15,12 +16,49 @@ class LayananSpesialis extends Model
         'nama_layanan',
         'deskripsi',
         'icon',
-        'dokter',
     ];
 
-    protected $casts = [
-        'dokter' => 'array', // Cast JSON field to array
-    ];
+    // Hapus cast dokter sebagai array karena kita akan menggunakan relasi
+    // protected $casts = [
+    //     'dokter' => 'array',
+    // ];
+
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->nama_layanan);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->nama_layanan);
+    }
+
+    /**
+     * Relasi ke jadwal dokter
+     */
+    public function jadwalDokter()
+    {
+        return $this->hasMany(JadwalDokter::class, 'spesialis_id');
+    }
+
+    /**
+     * Relasi ke dokter melalui jadwal dokter
+     */
+    public function dokter()
+    {
+        return $this->belongsToMany(MasterDokter::class, 'jadwal_dokter', 'spesialis_id', 'dokter_id')
+            ->withTimestamps();
+    }
 
     public static function storeValidationRules()
     {
@@ -28,8 +66,8 @@ class LayananSpesialis extends Model
             'nama_layanan' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'icon' => 'required|string|max:255',
-            'dokter' => 'required|array',
-            'dokter.*' => 'string|max:255',
+            'dokter_ids' => 'nullable|array',
+            'dokter_ids.*' => 'exists:master_dokter,id',
         ];
     }
 
@@ -45,7 +83,8 @@ class LayananSpesialis extends Model
                 'nama_layanan' => 'string',
                 'deskripsi' => 'string',
                 'icon' => 'string',
-                'dokter' => 'array of strings',
+                'dokter_ids' => 'array of master_dokter IDs',
+                'slug' => 'string (URL friendly version of nama_layanan)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -56,7 +95,7 @@ class LayananSpesialis extends Model
                     'query_params' => [
                         'search' => 'string (for filtering by nama_layanan)',
                         'per_page' => 'integer (default: 10)',
-                        'page' => 'integer (default: 1)', // added query param for page
+                        'page' => 'integer (default: 1)',
                     ],
                     'response' => [
                         'success' => true,
@@ -66,9 +105,9 @@ class LayananSpesialis extends Model
                                 [
                                     'id' => 1,
                                     'nama_layanan' => 'Spesialis A',
+                                    'slug' => 'spesialis-a',
                                     'deskripsi' => 'Deskripsi Spesialis A',
                                     'icon' => 'mdi mdi-account',
-                                    'dokter' => ['Dokter A', 'Dokter B'],
                                     'created_at' => '2023-10-01T12:34:56.000000Z',
                                     'updated_at' => '2023-10-01T12:34:56.000000Z',
                                 ],
@@ -93,7 +132,7 @@ class LayananSpesialis extends Model
                         'nama_layanan' => 'string',
                         'deskripsi' => 'string',
                         'icon' => 'string',
-                        'dokter' => ['array of strings'],
+                        'dokter_ids' => [1, 2, 3], // Array of master_dokter IDs
                     ],
                     'validations' => self::storeValidationRules(),
                     'response' => [
@@ -103,7 +142,18 @@ class LayananSpesialis extends Model
                             'nama_layanan' => 'Spesialis A',
                             'deskripsi' => 'Deskripsi Spesialis A',
                             'icon' => 'mdi mdi-account',
-                            'dokter' => ['Dokter A', 'Dokter B'],
+                            'dokter' => [
+                                [
+                                    'id' => 1,
+                                    'nama_dokter' => 'Dr. John Doe',
+                                    'background_dokter' => 'Latar belakang dokter...',
+                                    'foto' => 'uploads/master_dokter/20231001_1234.jpg',
+                                    'pivot' => [
+                                        'spesialis_id' => 1,
+                                        'dokter_id' => 1
+                                    ]
+                                ]
+                            ],
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:34:56.000000Z',
                         ],
@@ -116,7 +166,7 @@ class LayananSpesialis extends Model
                         'nama_layanan' => 'string',
                         'deskripsi' => 'string',
                         'icon' => 'string',
-                        'dokter' => ['array of strings'],
+                        'dokter_ids' => [1, 2, 3], // Array of master_dokter IDs
                     ],
                     'validations' => self::updateValidationRules(),
                     'response' => [
@@ -126,7 +176,18 @@ class LayananSpesialis extends Model
                             'nama_layanan' => 'Spesialis A (Updated)',
                             'deskripsi' => 'Deskripsi Spesialis A (Updated)',
                             'icon' => 'mdi mdi-account',
-                            'dokter' => ['Dokter C', 'Dokter D'],
+                            'dokter' => [
+                                [
+                                    'id' => 2,
+                                    'nama_dokter' => 'Dr. Jane Smith',
+                                    'background_dokter' => 'Latar belakang dokter...',
+                                    'foto' => 'uploads/master_dokter/20231001_1235.jpg',
+                                    'pivot' => [
+                                        'spesialis_id' => 1,
+                                        'dokter_id' => 2
+                                    ]
+                                ]
+                            ],
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:35:56.000000Z',
                         ],
@@ -140,6 +201,35 @@ class LayananSpesialis extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/layanan-spesialis/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'nama_layanan' => 'Spesialis A',
+                            'slug' => 'spesialis-a',
+                            'deskripsi' => 'Deskripsi Spesialis A',
+                            'icon' => 'mdi mdi-account',
+                            'dokter' => [
+                                [
+                                    'id' => 1,
+                                    'nama_dokter' => 'Dr. John Doe',
+                                    'foto' => 'uploads/master_dokter/20231001_1234.jpg',
+                                    'pivot' => [
+                                        'spesialis_id' => 1,
+                                        'dokter_id' => 1
+                                    ]
+                                ]
+                            ],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

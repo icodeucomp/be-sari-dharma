@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\IndikatorMutu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class IndikatorMutuController extends Controller
 {
@@ -43,16 +44,33 @@ class IndikatorMutuController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    /**
+     * Menampilkan data indikator mutu berdasarkan slug dan id.
+     *
+     * @param  string  $slug
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($slug, $id)
     {
         $indikator = IndikatorMutu::find($id);
 
         if (!$indikator) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
+        }
+
+        // Verifikasi kecocokan slug dengan judul
+        $slugFromData = Str::slug($indikator->judul);
+        if ($slug !== $slugFromData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Slug tidak sesuai dengan data',
+                'data' => null
+            ], 400);
         }
 
         return response()->json([

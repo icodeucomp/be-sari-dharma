@@ -23,6 +23,26 @@ class ArtikelKesehatan extends Model
         'dokter_terkait' => 'array', // Cast JSON field to array
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->judul);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->judul);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -40,6 +60,11 @@ class ArtikelKesehatan extends Model
         return self::storeValidationRules();
     }
 
+    public function kategori()
+    {
+        return $this->belongsTo(MasterKategori::class, 'kategori_id');
+    }
+
     public static function getApiDocumentation()
     {
         return [
@@ -49,6 +74,7 @@ class ArtikelKesehatan extends Model
                 'konten' => 'string',
                 'dokter_terkait' => 'array of strings',
                 'foto' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of judul)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -148,6 +174,32 @@ class ArtikelKesehatan extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/artikel-kesehatan/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'kategori_id' => 1,
+                            'judul' => 'Manfaat Olahraga',
+                            'slug' => 'manfaat-olahraga',
+                            'konten' => 'Olahraga memiliki banyak manfaat...',
+                            'dokter_terkait' => ['Dr. John Doe', 'Dr. Jane Smith'],
+                            'foto' => 'uploads/artikel_kesehatan/20231001_1234.jpg',
+                            'kategori' => [
+                                'id' => 1,
+                                'name' => 'Kategori A',
+                                'page' => 'page_a',
+                                'flag' => 'ArtikelKesehatan'
+                            ],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

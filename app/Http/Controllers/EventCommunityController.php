@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EventCommunity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EventCommunityController extends Controller
 {
@@ -12,15 +13,15 @@ class EventCommunityController extends Controller
     {
         $search = $request->query('search');
         $perPage = $request->query('per_page', 10);
-        $page = $request->query('page', 1); // baru
-        $query = EventCommunity::query();
+        $page = $request->query('page', 1);
+        $query = EventCommunity::query(); // Pastikan tidak ada with()
         if ($search) {
             $query->where('judul', 'like', '%' . $search . '%');
         }
         $data = $query->paginate($perPage, ['*'], 'page', $page);
         return response()->json([
             'success' => true,
-            'data' => $data,
+            'data' => $data
         ], 200);
     }
 
@@ -43,20 +44,36 @@ class EventCommunityController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    /**
+     * Menampilkan data event community berdasarkan slug dan id.
+     *
+     * @param  string  $slug
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($slug, $id)
     {
-        $event = EventCommunity::find($id);
+        $event = EventCommunity::with('kategori')->find($id); // Tambahkan relasi saat show
 
         if (!$event) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
         }
 
+        // Verifikasi kecocokan slug dengan judul
+        $slugFromData = Str::slug($event->judul);
+        if ($slug !== $slugFromData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Slug tidak sesuai dengan data',
+                'data' => null
+            ], 400);
+        }
+
         return response()->json([
-            'success' => true,
             'success' => true,
             'data' => $event
         ], 200);

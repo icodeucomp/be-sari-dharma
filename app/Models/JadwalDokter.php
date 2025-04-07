@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class JadwalDokter extends Model
 {
@@ -12,8 +13,8 @@ class JadwalDokter extends Model
     protected $table = 'jadwal_dokter';
 
     protected $fillable = [
-        'nama_dokter',
-        'spesialis',
+        'dokter_id',
+        'spesialis_id',
         'background_dokter',
         'jadwal_dokter',
         'edukasi_karir',
@@ -21,26 +22,78 @@ class JadwalDokter extends Model
     ];
 
     protected $casts = [
-        'jadwal_dokter' => 'array', // Cast JSON field to array
-        'edukasi_karir' => 'array', // Cast JSON field to array
+        'jadwal_dokter' => 'array',
+        'edukasi_karir' => 'array',
     ];
+
+    /**
+     * Relasi ke dokter
+     */
+    public function dokter()
+    {
+        return $this->belongsTo(MasterDokter::class, 'dokter_id');
+    }
+
+    /**
+     * Relasi ke spesialis
+     */
+    public function spesialis()
+    {
+        return $this->belongsTo(LayananSpesialis::class, 'spesialis_id');
+    }
 
     public static function storeValidationRules()
     {
         return [
-            'nama_dokter' => 'required|string|max:255',
-            'spesialis' => 'required|string|max:255',
+            'dokter_id' => 'required|exists:master_dokter,id',
+            'spesialis_id' => 'required|exists:layanan_spesialis,id',
             'background_dokter' => 'nullable|string',
-            'jadwal_dokter' => 'required|array',
-            'jadwal_dokter.*.hari' => 'required|string|max:255',
-            'jadwal_dokter.*.jam_mulai' => 'required|string|max:255',
-            'jadwal_dokter.*.jam_selesai' => 'required|string|max:255',
-            'edukasi_karir' => 'required|array',
-            'edukasi_karir.*.judul' => 'required|string|max:255',
-            'edukasi_karir.*.tahun_mulai' => 'required|integer',
-            'edukasi_karir.*.tahun_selesai' => 'nullable|integer',
+            'jadwal_dokter' => 'required', // Ubah dari array menjadi lebih fleksibel
+            'edukasi_karir' => 'required', // Ubah dari array menjadi lebih fleksibel
             'foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ];
+    }
+
+    // Custom accessor untuk memastikan jadwal_dokter selalu array
+    public function getJadwalDokterAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return $value ?? [];
+    }
+
+    // Custom accessor untuk memastikan edukasi_karir selalu array
+    public function getEdukasiKarirAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return $value ?? [];
+    }
+
+    // Custom mutator untuk menangani jadwal_dokter sebagai string atau array
+    public function setJadwalDokterAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            $this->attributes['jadwal_dokter'] = json_encode(is_array($decoded) ? $decoded : []);
+        } else {
+            $this->attributes['jadwal_dokter'] = json_encode($value ?? []);
+        }
+    }
+
+    // Custom mutator untuk menangani edukasi_karir sebagai string atau array
+    public function setEdukasiKarirAttribute($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            $this->attributes['edukasi_karir'] = json_encode(is_array($decoded) ? $decoded : []);
+        } else {
+            $this->attributes['edukasi_karir'] = json_encode($value ?? []);
+        }
     }
 
     public static function updateValidationRules()
@@ -52,8 +105,8 @@ class JadwalDokter extends Model
     {
         return [
             'fields' => [
-                'nama_dokter' => 'string',
-                'spesialis' => 'string',
+                'dokter_id' => 'integer (foreign key to master_dokter)',
+                'spesialis_id' => 'integer (foreign key to layanan_spesialis)',
                 'background_dokter' => 'string',
                 'jadwal_dokter' => 'array of objects (hari, jam_mulai, jam_selesai)',
                 'edukasi_karir' => 'array of objects (judul, tahun_mulai, tahun_selesai)',
@@ -66,9 +119,11 @@ class JadwalDokter extends Model
                     'payload' => null,
                     'validations' => null,
                     'query_params' => [
-                        'search' => 'string (for filtering by nama_dokter)',
+                        'search' => 'string (for filtering by nama_dokter via relationship)',
+                        'dokter_id' => 'integer (for filtering by dokter_id)',
+                        'spesialis_id' => 'integer (for filtering by spesialis_id)',
                         'per_page' => 'integer (default: 10)',
-                        'page' => 'integer (default: 1)', // added query param for page
+                        'page' => 'integer (default: 1)',
                     ],
                     'response' => [
                         'success' => true,
@@ -77,8 +132,8 @@ class JadwalDokter extends Model
                             'data' => [
                                 [
                                     'id' => 1,
-                                    'nama_dokter' => 'Dr. John Doe',
-                                    'spesialis' => 'Spesialis A',
+                                    'dokter_id' => 1,
+                                    'spesialis_id' => 1,
                                     'background_dokter' => 'Background Dokter A',
                                     'jadwal_dokter' => [
                                         ['hari' => 'Senin', 'jam_mulai' => '08:00', 'jam_selesai' => '12:00'],
@@ -110,8 +165,8 @@ class JadwalDokter extends Model
                     'url' => '/api/jadwal-dokter',
                     'method' => 'POST',
                     'payload' => [
-                        'nama_dokter' => 'string',
-                        'spesialis' => 'string',
+                        'dokter_id' => 'integer',
+                        'spesialis_id' => 'integer',
                         'background_dokter' => 'string',
                         'jadwal_dokter' => [
                             ['hari' => 'string', 'jam_mulai' => 'string', 'jam_selesai' => 'string'],
@@ -126,8 +181,8 @@ class JadwalDokter extends Model
                         'success' => true,
                         'data' => [
                             'id' => 1,
-                            'nama_dokter' => 'Dr. John Doe',
-                            'spesialis' => 'Spesialis A',
+                            'dokter_id' => 1,
+                            'spesialis_id' => 1,
                             'background_dokter' => 'Background Dokter A',
                             'jadwal_dokter' => [
                                 ['hari' => 'Senin', 'jam_mulai' => '08:00', 'jam_selesai' => '12:00'],
@@ -145,8 +200,8 @@ class JadwalDokter extends Model
                     'url' => '/api/jadwal-dokter/{id}',
                     'method' => 'PUT',
                     'payload' => [
-                        'nama_dokter' => 'string',
-                        'spesialis' => 'string',
+                        'dokter_id' => 'integer',
+                        'spesialis_id' => 'integer',
                         'background_dokter' => 'string',
                         'jadwal_dokter' => [
                             ['hari' => 'string', 'jam_mulai' => 'string', 'jam_selesai' => 'string'],
@@ -161,8 +216,8 @@ class JadwalDokter extends Model
                         'success' => true,
                         'data' => [
                             'id' => 1,
-                            'nama_dokter' => 'Dr. John Doe (Updated)',
-                            'spesialis' => 'Spesialis B',
+                            'dokter_id' => 1,
+                            'spesialis_id' => 1,
                             'background_dokter' => 'Background Dokter B',
                             'jadwal_dokter' => [
                                 ['hari' => 'Selasa', 'jam_mulai' => '09:00', 'jam_selesai' => '13:00'],
@@ -184,6 +239,43 @@ class JadwalDokter extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/jadwal-dokter/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'dokter_id' => 1,
+                            'spesialis_id' => 1,
+                            'background_dokter' => 'Background Dokter A',
+                            'jadwal_dokter' => [
+                                ['hari' => 'Senin', 'jam_mulai' => '08:00', 'jam_selesai' => '12:00'],
+                                ['hari' => 'Rabu', 'jam_mulai' => '13:00', 'jam_selesai' => '17:00'],
+                            ],
+                            'edukasi_karir' => [
+                                ['judul' => 'Pendidikan A', 'tahun_mulai' => 2010, 'tahun_selesai' => 2014],
+                                ['judul' => 'Karir B', 'tahun_mulai' => 2015, 'tahun_selesai' => null],
+                            ],
+                            'foto' => 'uploads/jadwal_dokter/20231001_1234.jpg',
+                            'dokter' => [
+                                'id' => 1,
+                                'nama_dokter' => 'Dr. John Doe',
+                                'foto' => 'uploads/master_dokter/20231001_1234.jpg',
+                            ],
+                            'spesialis' => [
+                                'id' => 1,
+                                'nama_layanan' => 'Spesialis A',
+                                'deskripsi' => 'Deskripsi Spesialis A',
+                                'icon' => 'mdi mdi-account',
+                            ],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

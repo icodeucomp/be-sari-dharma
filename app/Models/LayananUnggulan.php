@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class LayananUnggulan extends Model
 {
@@ -16,6 +17,26 @@ class LayananUnggulan extends Model
         'deskripsi',
         'foto',
     ];
+
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->nama_layanan);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->nama_layanan);
+    }
 
     static function storeValidationRules()
     {
@@ -41,6 +62,7 @@ class LayananUnggulan extends Model
                 'nama_layanan' => 'string',
                 'deskripsi' => 'string',
                 'foto' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of nama_layanan)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -61,6 +83,7 @@ class LayananUnggulan extends Model
                                 [
                                     'id' => 1,
                                     'nama_layanan' => 'Layanan A',
+                                    'slug' => 'layanan-a',
                                     'deskripsi' => 'Deskripsi Layanan A',
                                     'foto' => 'uploads/layanan_unggulan/20231001_1234.jpg',
                                     'created_at' => '2023-10-01T12:34:56.000000Z',
@@ -130,6 +153,24 @@ class LayananUnggulan extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/layanan-unggulan/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'nama_layanan' => 'Layanan A',
+                            'deskripsi' => 'Deskripsi Layanan A',
+                            'gambar' => 'uploads/layanan/20231001_1234.jpg',
+                            'slug' => 'layanan-a',
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LayananFasilitas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LayananFasilitasController extends Controller
 {
@@ -50,16 +51,33 @@ class LayananFasilitasController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    /**
+     * Menampilkan data layanan fasilitas berdasarkan slug dan id.
+     *
+     * @param  string  $slug
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($slug, $id)
     {
         $layanan = LayananFasilitas::find($id);
 
         if (!$layanan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
+        }
+
+        // Verifikasi kecocokan slug dengan nama_fasilitas
+        $slugFromData = Str::slug($layanan->nama_fasilitas);
+        if ($slug !== $slugFromData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Slug tidak sesuai dengan data',
+                'data' => null
+            ], 400);
         }
 
         return response()->json([

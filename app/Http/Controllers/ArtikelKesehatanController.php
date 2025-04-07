@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ArtikelKesehatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ArtikelKesehatanController extends Controller
 {
@@ -13,7 +14,7 @@ class ArtikelKesehatanController extends Controller
         $search = $request->query('search');
         $perPage = $request->query('per_page', 10);
         $page = $request->query('page', 1);
-        $query = ArtikelKesehatan::query();
+        $query = ArtikelKesehatan::query(); // Pastikan tidak ada with()
         if ($search) {
             $query->where('judul', 'like', '%' . $search . '%');
         }
@@ -43,16 +44,33 @@ class ArtikelKesehatanController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    /**
+     * Menampilkan data artikel kesehatan berdasarkan slug dan id.
+     *
+     * @param  string  $slug
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($slug, $id)
     {
-        $artikel = ArtikelKesehatan::find($id);
+        $artikel = ArtikelKesehatan::with('kategori')->find($id); // Tambahkan relasi saat show
 
         if (!$artikel) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
+        }
+
+        // Verifikasi kecocokan slug dengan judul
+        $slugFromData = Str::slug($artikel->judul);
+        if ($slug !== $slugFromData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Slug tidak sesuai dengan data',
+                'data' => null
+            ], 400);
         }
 
         return response()->json([

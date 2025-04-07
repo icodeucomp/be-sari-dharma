@@ -20,6 +20,26 @@ class PaketKesehatan extends Model
         'foto',
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->nama_paket);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->nama_paket);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -37,6 +57,11 @@ class PaketKesehatan extends Model
         return self::storeValidationRules();
     }
 
+    public function kategori()
+    {
+        return $this->belongsTo(MasterKategori::class, 'kategori_id');
+    }
+
     public static function getApiDocumentation()
     {
         return [
@@ -47,6 +72,7 @@ class PaketKesehatan extends Model
                 'berlaku_sampai' => 'date',
                 'deskripsi' => 'string',
                 'foto' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of nama_paket)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -151,6 +177,33 @@ class PaketKesehatan extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/paket-kesehatan/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'nama_paket' => 'Paket A',
+                            'slug' => 'paket-a',
+                            'kategori_id' => 1,
+                            'promo' => true,
+                            'berlaku_sampai' => '2023-12-31',
+                            'deskripsi' => 'Deskripsi Paket A',
+                            'foto' => 'uploads/paket_kesehatan/20231001_1234.jpg',
+                            'kategori' => [
+                                'id' => 1,
+                                'name' => 'Kategori A',
+                                'page' => 'page_a',
+                                'flag' => 'PaketKesehatan'
+                            ],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

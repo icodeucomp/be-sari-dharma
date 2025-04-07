@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PaketKesehatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PaketKesehatanController extends Controller
 {
@@ -43,16 +44,33 @@ class PaketKesehatanController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    /**
+     * Menampilkan data paket kesehatan berdasarkan slug dan id.
+     *
+     * @param  string  $slug
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($slug, $id)
     {
-        $paket = PaketKesehatan::find($id);
+        $paket = PaketKesehatan::with('kategori')->find($id);
 
         if (!$paket) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
+        }
+
+        // Verifikasi kecocokan slug dengan nama_paket
+        $slugFromData = Str::slug($paket->nama_paket);
+        if ($slug !== $slugFromData) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Slug tidak sesuai dengan data',
+                'data' => null
+            ], 400);
         }
 
         return response()->json([

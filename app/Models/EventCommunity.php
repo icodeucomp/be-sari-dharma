@@ -18,6 +18,26 @@ class EventCommunity extends Model
         'foto',
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->judul);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->judul);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -33,6 +53,11 @@ class EventCommunity extends Model
         return self::storeValidationRules();
     }
 
+    public function kategori()
+    {
+        return $this->belongsTo(MasterKategori::class, 'kategori_id');
+    }
+
     public static function getApiDocumentation()
     {
         return [
@@ -41,6 +66,7 @@ class EventCommunity extends Model
                 'judul' => 'string',
                 'konten' => 'string',
                 'foto' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of judul)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -135,6 +161,31 @@ class EventCommunity extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/event-community/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'kategori_id' => 1,
+                            'judul' => 'Event A',
+                            'slug' => 'event-a',
+                            'konten' => 'Konten Event A...',
+                            'foto' => 'uploads/event_community/20231001_1234.jpg',
+                            'kategori' => [
+                                'id' => 1,
+                                'name' => 'Kategori A',
+                                'page' => 'page_a',
+                                'flag' => 'EventCommunity'
+                            ],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

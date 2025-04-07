@@ -19,6 +19,26 @@ class LayananFasilitas extends Model
         'foto_lainnya',
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->nama_fasilitas);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->nama_fasilitas);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -44,6 +64,7 @@ class LayananFasilitas extends Model
                 'layanan_fasilitas' => 'string',
                 'foto_header' => 'string (path to file)',
                 'foto_lainnya' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of nama_fasilitas)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -143,6 +164,26 @@ class LayananFasilitas extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/layanan-fasilitas/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'nama_fasilitas' => 'Fasilitas A',
+                            'slug' => 'fasilitas-a',
+                            'deskripsi_overview' => 'Deskripsi Fasilitas A',
+                            'layanan_fasilitas' => 'Layanan Fasilitas A',
+                            'foto_header' => 'uploads/layanan_fasilitas/20231001_1234.jpg',
+                            'foto_lainnya' => 'uploads/layanan_fasilitas/20231001_1235.jpg',
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

@@ -18,6 +18,26 @@ class Karir extends Model
         'foto',
     ];
 
+    // Boot method untuk mengisi slug otomatis
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::retrieved(function ($model) {
+            $model->slug = Str::slug($model->posisi);
+        });
+    }
+
+    /**
+     * Mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug ?? Str::slug($this->posisi);
+    }
+
     public static function storeValidationRules()
     {
         return [
@@ -41,6 +61,7 @@ class Karir extends Model
                 'posisi' => 'string',
                 'link_pendaftaran' => 'string (URL)',
                 'foto' => 'string (path to file)',
+                'slug' => 'string (URL friendly version of posisi)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -135,6 +156,25 @@ class Karir extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/karir/{slug}/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'divisi' => 'IT',
+                            'posisi' => 'Software Engineer',
+                            'slug' => 'software-engineer',
+                            'link_pendaftaran' => 'https://example.com/apply',
+                            'foto' => 'uploads/karir/20231001_1234.jpg',
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

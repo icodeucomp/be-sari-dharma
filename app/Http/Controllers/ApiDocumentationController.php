@@ -14,6 +14,7 @@ use App\Models\Karir; // Tambahkan ini
 use App\Models\KontenSocialMedia; // Tambahkan ini
 use App\Models\SertifikasiPenghargaan; // Tambahkan ini
 use App\Models\MasterKategori; // Tambahkan ini
+use App\Models\MasterDokter;
 
 class ApiDocumentationController extends Controller
 {
@@ -94,6 +95,7 @@ class ApiDocumentationController extends Controller
             'KontenSocialMedia' => KontenSocialMedia::getApiDocumentation(), // Tambahkan ini
             'SertifikasiPenghargaan' => SertifikasiPenghargaan::getApiDocumentation(), // Tambahkan ini
             'MasterKategori' => MasterKategori::getApiDocumentation(), // Tambahkan ini
+            'MasterDokter' => MasterDokter::getApiDocumentation(),
         ];
 
         return response()->json([
