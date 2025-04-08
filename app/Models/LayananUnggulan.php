@@ -18,14 +18,17 @@ class LayananUnggulan extends Model
         'foto',
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->nama_layanan);
-        });
+    /**
+     * Accessor untuk mendapatkan slug dari nama layanan.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->nama_layanan);
     }
 
     /**

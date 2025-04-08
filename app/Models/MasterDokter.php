@@ -17,6 +17,19 @@ class MasterDokter extends Model
         'foto',
     ];
 
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
+
+    /**
+     * Accessor untuk mendapatkan slug dari nama dokter.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->nama_dokter);
+    }
+
     /**
      * Relasi ke spesialis melalui tabel pivot
      */

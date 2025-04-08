@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LayananSpesialis;
 use App\Models\JadwalDokter;
+use App\Helpers\Cryptor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -34,9 +35,16 @@ class LayananSpesialisController extends Controller
         $validated = $request->validate(LayananSpesialis::storeValidationRules());
 
         // Hapus dokter_ids dari validated karena kita akan proses secara terpisah
-        $dokterIds = $request->input('dokter_ids', []);
+        $encryptedDokterIds = $request->input('dokter_ids', []);
         if (isset($validated['dokter_ids'])) {
             unset($validated['dokter_ids']);
+        }
+
+        // Decrypt dokter_ids
+        $cryptor = new Cryptor();
+        $dokterIds = [];
+        foreach ($encryptedDokterIds as $encryptedId) {
+            $dokterIds[] = $cryptor->decrypt($encryptedId);
         }
 
         // Menggunakan transaksi database untuk memastikan konsistensi data
@@ -88,7 +96,7 @@ class LayananSpesialisController extends Controller
      */
     public function show($slug, $id)
     {
-        $layanan = LayananSpesialis::with('dokter')->find($id); // Tambahkan relasi saat show
+        $layanan = LayananSpesialis::with('dokter')->find($id);
 
         if (!$layanan) {
             return response()->json([
@@ -108,9 +116,26 @@ class LayananSpesialisController extends Controller
             ], 400);
         }
 
+        // Konversi data ke array agar bisa dimodifikasi
+        $layananArray = $layanan->toArray();
+
+        // Enkripsi ID pada relasi dokter
+        $cryptor = new Cryptor();
+        if (isset($layananArray['dokter']) && is_array($layananArray['dokter'])) {
+            foreach ($layananArray['dokter'] as $key => $dokter) {
+                $layananArray['dokter'][$key]['id'] = $cryptor->encrypt($dokter['id']);
+
+                // Jika relasi pivot juga memiliki ID yang perlu dienkripsi
+                if (isset($dokter['pivot'])) {
+                    $layananArray['dokter'][$key]['pivot']['dokter_id'] = $cryptor->encrypt($dokter['pivot']['dokter_id']);
+                    $layananArray['dokter'][$key]['pivot']['spesialis_id'] = $cryptor->encrypt($dokter['pivot']['spesialis_id']);
+                }
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $layanan
+            'data' => $layananArray
         ], 200);
     }
 
@@ -129,9 +154,16 @@ class LayananSpesialisController extends Controller
         $validated = $request->validate(LayananSpesialis::updateValidationRules());
 
         // Hapus dokter_ids dari validated karena kita akan proses secara terpisah
-        $dokterIds = $request->input('dokter_ids', []);
+        $encryptedDokterIds = $request->input('dokter_ids', []);
         if (isset($validated['dokter_ids'])) {
             unset($validated['dokter_ids']);
+        }
+
+        // Decrypt dokter_ids
+        $cryptor = new Cryptor();
+        $dokterIds = [];
+        foreach ($encryptedDokterIds as $encryptedId) {
+            $dokterIds[] = $cryptor->decrypt($encryptedId);
         }
 
         // Menggunakan transaksi database

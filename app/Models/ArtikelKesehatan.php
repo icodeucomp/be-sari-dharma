@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ArtikelKesehatan extends Model
 {
@@ -23,14 +24,17 @@ class ArtikelKesehatan extends Model
         'dokter_terkait' => 'array', // Cast JSON field to array
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->judul);
-        });
+    /**
+     * Accessor untuk mendapatkan slug dari judul.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->judul);
     }
 
     /**
@@ -83,9 +87,12 @@ class ArtikelKesehatan extends Model
                     'payload' => null,
                     'validations' => null,
                     'query_params' => [
-                        'search' => 'string (for filtering by judul)',
+                        'search' => 'string (untuk filter berdasarkan judul)',
+                        'slug' => 'string (untuk filter berdasarkan slug artikel)',
+                        'kategori_id' => 'string (ID terenkripsi untuk filter berdasarkan kategori)',
+                        'dokter_terkait' => 'string|array (ID terenkripsi untuk filter berdasarkan dokter terkait)',
                         'per_page' => 'integer (default: 10)',
-                        'page' => 'integer (default: 1)', // added query param for page
+                        'page' => 'integer (default: 1)',
                     ],
                     'response' => [
                         'success' => true,

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PaketKesehatan extends Model
 {
@@ -20,14 +21,17 @@ class PaketKesehatan extends Model
         'foto',
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->nama_paket);
-        });
+    /**
+     * Accessor untuk mendapatkan slug dari nama paket.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->nama_paket);
     }
 
     /**
@@ -81,9 +85,13 @@ class PaketKesehatan extends Model
                     'payload' => null,
                     'validations' => null,
                     'query_params' => [
-                        'search' => 'string (for filtering by nama_paket)',
+                        'search' => 'string (untuk filter berdasarkan nama_paket)',
+                        'kategori_id' => 'integer (untuk filter berdasarkan kategori)',
+                        'promo' => 'boolean (0 atau 1, untuk filter berdasarkan status promo)',
+                        'berlaku_start' => 'date (YYYY-MM-DD, untuk filter berdasarkan awal masa berlaku)',
+                        'berlaku_end' => 'date (YYYY-MM-DD, untuk filter berdasarkan akhir masa berlaku)',
                         'per_page' => 'integer (default: 10)',
-                        'page' => 'integer (default: 1)', // added query param for page
+                        'page' => 'integer (default: 1)',
                     ],
                     'response' => [
                         'success' => true,

@@ -13,7 +13,6 @@ class MasterKategori extends Model
 
     protected $fillable = [
         'name',
-        'page',
         'flag'
     ];
 
@@ -21,7 +20,6 @@ class MasterKategori extends Model
     {
         return [
             'name' => 'required|string|max:255',
-            'page' => 'required|string|max:255',
             'flag' => 'required|string|max:255'
         ];
     }

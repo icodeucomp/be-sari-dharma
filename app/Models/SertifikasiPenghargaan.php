@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class SertifikasiPenghargaan extends Model
 {
@@ -16,24 +17,17 @@ class SertifikasiPenghargaan extends Model
         'file_pdf',
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->judul);
-        });
-    }
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
     /**
-     * Mendapatkan slug dari nama layanan.
+     * Accessor untuk mendapatkan slug dari judul.
      *
      * @return string
      */
-    public function getSlug()
+    public function getSlugAttribute()
     {
-        return $this->slug ?? Str::slug($this->judul);
+        return Str::slug($this->judul);
     }
 
     public static function storeValidationRules()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Cryptor;
 use App\Models\PaketKesehatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,16 +12,45 @@ class PaketKesehatanController extends Controller
 {
     public function index(Request $request)
     {
+        $cryptor = new Cryptor();
         $search = $request->query('search');
+        $kategoriId = $request->query('kategori_id');
+        $promo = $request->query('promo');
+        $berlakuStart = $request->query('berlaku_start');
+        $berlakuEnd = $request->query('berlaku_end');
         $perPage = $request->query('per_page', 10);
-        $page = $request->query('page', 1); // baru
+        $page = $request->query('page', 1);
+
         $query = PaketKesehatan::query();
+
+        // Filter berdasarkan pencarian
         if ($search) {
             $query->where('nama_paket', 'like', '%' . $search . '%');
         }
+
+        // Filter berdasarkan kategori_id
+        if ($kategoriId) {
+            $query->where('kategori_id', $cryptor->decrypt($kategoriId));
+        }
+
+        // Filter berdasarkan promo (0 atau 1)
+        if ($promo !== null && ($promo == '0' || $promo == '1')) {
+            $query->where('promo', $promo);
+        }
+
+        // Filter berdasarkan masa berlaku
+        if ($berlakuStart) {
+            $query->whereDate('berlaku_sampai', '>=', $berlakuStart);
+        }
+
+        if ($berlakuEnd) {
+            $query->whereDate('berlaku_sampai', '<=', $berlakuEnd);
+        }
+
         $data = $query->paginate($perPage, ['*'], 'page', $page);
+
         return response()->json([
-            'success' => true, // HTTP 200 OK
+            'success' => true,
             'data' => $data
         ], 200);
     }

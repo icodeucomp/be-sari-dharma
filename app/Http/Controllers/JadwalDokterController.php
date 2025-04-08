@@ -4,13 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\JadwalDokter;
 use App\Models\MasterDokter;
+use App\Models\LayananSpesialis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\Cryptor;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class JadwalDokterController extends Controller
 {
+    protected $cryptor;
+
+    public function __construct()
+    {
+        $this->cryptor = new Cryptor();
+    }
+
     public function index(Request $request)
     {
         $search = $request->query('search');
@@ -19,7 +30,7 @@ class JadwalDokterController extends Controller
         $perPage = $request->query('per_page', 10);
         $page = $request->query('page', 1);
 
-        $query = JadwalDokter::query(); // Hapus with(['dokter', 'spesialis'])
+        $query = JadwalDokter::with(['dokter']); // Hapus with(['dokter', 'spesialis'])
 
         if ($search) {
             $query->whereHas('dokter', function ($q) use ($search) {
@@ -28,11 +39,13 @@ class JadwalDokterController extends Controller
         }
 
         if ($dokterId) {
-            $query->where('dokter_id', $dokterId);
+            $decryptedDokterId = $this->cryptor->decrypt($dokterId);
+            $query->where('dokter_id', $decryptedDokterId);
         }
 
         if ($spesialisId) {
-            $query->where('spesialis_id', $spesialisId);
+            $decryptedSpesialisId = $this->cryptor->decrypt($spesialisId);
+            $query->where('spesialis_id', $decryptedSpesialisId);
         }
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
@@ -45,7 +58,21 @@ class JadwalDokterController extends Controller
 
     public function store(Request $request)
     {
+        Log::debug('Request data: ', $request->all());
+        // Validasi awal tanpa exists check
         $validated = $request->validate(JadwalDokter::storeValidationRules());
+
+        // Validasi manual untuk relasi setelah nilai didekripsi oleh middleware
+        $relationErrors = JadwalDokter::validateRelations($validated);
+
+        if (!empty($relationErrors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $relationErrors,
+                'data' => null
+            ], 422);
+        }
 
         // Handle jadwal_dokter jika dikirim sebagai string JSON
         if (isset($validated['jadwal_dokter']) && is_string($validated['jadwal_dokter'])) {
@@ -150,7 +177,20 @@ class JadwalDokterController extends Controller
             ], 404);
         }
 
+        // Validasi awal tanpa exists check
         $validated = $request->validate(JadwalDokter::updateValidationRules());
+
+        // Validasi manual untuk relasi setelah nilai didekripsi oleh middleware
+        $relationErrors = JadwalDokter::validateRelations($validated);
+
+        if (!empty($relationErrors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $relationErrors,
+                'data' => null
+            ], 422);
+        }
 
         // Handle jadwal_dokter jika dikirim sebagai string JSON
         if (isset($validated['jadwal_dokter']) && is_string($validated['jadwal_dokter'])) {
@@ -228,6 +268,7 @@ class JadwalDokterController extends Controller
 
     public function destroy($id)
     {
+        Log::debug('Request data: ', ['id' => $id]);
         $jadwal = JadwalDokter::find($id);
 
         if (!$jadwal) {

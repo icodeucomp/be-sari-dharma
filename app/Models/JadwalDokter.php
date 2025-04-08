@@ -45,8 +45,8 @@ class JadwalDokter extends Model
     public static function storeValidationRules()
     {
         return [
-            'dokter_id' => 'required|exists:master_dokter,id',
-            'spesialis_id' => 'required|exists:layanan_spesialis,id',
+            'dokter_id' => 'required', // Hilangkan validasi exists
+            'spesialis_id' => 'required', // Hilangkan validasi exists
             'background_dokter' => 'nullable|string',
             'jadwal_dokter' => 'required', // Ubah dari array menjadi lebih fleksibel
             'edukasi_karir' => 'required', // Ubah dari array menjadi lebih fleksibel
@@ -99,6 +99,33 @@ class JadwalDokter extends Model
     public static function updateValidationRules()
     {
         return self::storeValidationRules();
+    }
+
+    /**
+     * Validasi manual untuk memastikan dokter_id dan spesialis_id ada di database
+     * 
+     * @param array $data
+     * @return array
+     */
+    public static function validateRelations($data)
+    {
+        $errors = [];
+
+        if (isset($data['dokter_id'])) {
+            $dokterExists = MasterDokter::find($data['dokter_id']);
+            if (!$dokterExists) {
+                $errors['dokter_id'] = ['Dokter tidak ditemukan.'];
+            }
+        }
+
+        if (isset($data['spesialis_id'])) {
+            $spesialisExists = LayananSpesialis::find($data['spesialis_id']);
+            if (!$spesialisExists) {
+                $errors['spesialis_id'] = ['Spesialis tidak ditemukan.'];
+            }
+        }
+
+        return $errors;
     }
 
     public static function getApiDocumentation()

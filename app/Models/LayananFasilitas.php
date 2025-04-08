@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class LayananFasilitas extends Model
 {
@@ -19,14 +20,17 @@ class LayananFasilitas extends Model
         'foto_lainnya',
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->nama_fasilitas);
-        });
+    /**
+     * Accessor untuk mendapatkan slug dari nama fasilitas.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->nama_fasilitas);
     }
 
     /**

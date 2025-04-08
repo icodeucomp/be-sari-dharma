@@ -18,29 +18,17 @@ class LayananSpesialis extends Model
         'icon',
     ];
 
-    // Hapus cast dokter sebagai array karena kita akan menggunakan relasi
-    // protected $casts = [
-    //     'dokter' => 'array',
-    // ];
-
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->nama_layanan);
-        });
-    }
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
     /**
-     * Mendapatkan slug dari nama layanan.
+     * Accessor untuk mendapatkan slug dari nama layanan.
      *
      * @return string
      */
-    public function getSlug()
+    public function getSlugAttribute()
     {
-        return $this->slug ?? Str::slug($this->nama_layanan);
+        return Str::slug($this->nama_layanan);
     }
 
     /**
@@ -67,7 +55,7 @@ class LayananSpesialis extends Model
             'deskripsi' => 'nullable|string',
             'icon' => 'required|string|max:255',
             'dokter_ids' => 'nullable|array',
-            'dokter_ids.*' => 'exists:master_dokter,id',
+            'dokter_ids.*' => 'required|string', // Ubah menjadi string karena ID terenkripsi
         ];
     }
 

@@ -36,6 +36,14 @@ class IndikatorMutuController extends Controller
             $validated['file_pdf'] = $path;
         }
 
+        // Tambahkan proses upload foto
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = now()->format('Ymd_Hi') . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads/indikator_mutu/foto', $filename, 'public');
+            $validated['foto'] = $path;
+        }
+
         $indikator = IndikatorMutu::create($validated);
 
         return response()->json([
@@ -104,10 +112,21 @@ class IndikatorMutuController extends Controller
             $validated['file_pdf'] = $path;
         }
 
+        // Tambahkan proses upload dan update foto
+        if ($request->hasFile('foto')) {
+            if ($indikator->foto && Storage::disk('public')->exists($indikator->foto)) {
+                Storage::disk('public')->delete($indikator->foto);
+            }
+
+            $file = $request->file('foto');
+            $filename = now()->format('Ymd_Hi') . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads/indikator_mutu/foto', $filename, 'public');
+            $validated['foto'] = $path;
+        }
+
         $indikator->update($validated);
 
         return response()->json([
-            'success' => true,
             'success' => true,
             'data' => $indikator
         ], 200);
@@ -127,6 +146,11 @@ class IndikatorMutuController extends Controller
 
         if ($indikator->file_pdf && Storage::disk('public')->exists($indikator->file_pdf)) {
             Storage::disk('public')->delete($indikator->file_pdf);
+        }
+
+        // Hapus foto jika ada
+        if ($indikator->foto && Storage::disk('public')->exists($indikator->foto)) {
+            Storage::disk('public')->delete($indikator->foto);
         }
 
         $indikator->delete();

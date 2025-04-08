@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class EventCommunity extends Model
 {
@@ -18,14 +19,17 @@ class EventCommunity extends Model
         'foto',
     ];
 
-    // Boot method untuk mengisi slug otomatis
-    protected static function boot()
-    {
-        parent::boot();
+    // Mendefinisikan properti virtual yang tidak disimpan di database
+    protected $appends = ['slug'];
 
-        static::retrieved(function ($model) {
-            $model->slug = Str::slug($model->judul);
-        });
+    /**
+     * Accessor untuk mendapatkan slug dari judul.
+     *
+     * @return string
+     */
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->judul);
     }
 
     /**

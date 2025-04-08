@@ -95,7 +95,7 @@ class UniversalIdCryptorMiddleware
             // Handle paginated data
             if (isset($content['data']['data']) && is_array($content['data']['data'])) {
                 foreach ($content['data']['data'] as &$item) {
-                    if (isset($item['id'])) {
+                    if (isset($item['id']) && $this->isIdValue($item['id'])) {
                         $item['id'] = $cryptor->encrypt($item['id']);
                     }
                 }
@@ -104,18 +104,44 @@ class UniversalIdCryptorMiddleware
             elseif (is_array($content['data'])) {
                 if (array_is_list($content['data'])) {
                     foreach ($content['data'] as &$item) {
-                        if (isset($item['id'])) {
+                        if (isset($item['id']) && $this->isIdValue($item['id'])) {
                             $item['id'] = $cryptor->encrypt($item['id']);
                         }
                     }
                 }
                 // Handle single object data
-                elseif (isset($content['data']['id'])) {
+                elseif (isset($content['data']['id']) && $this->isIdValue($content['data']['id'])) {
                     $content['data']['id'] = $cryptor->encrypt($content['data']['id']);
                 }
             }
 
             $response->setContent(json_encode($content));
         }
+    }
+
+    /**
+     * Memeriksa apakah suatu nilai adalah nilai ID yang valid untuk dienkripsi
+     * 
+     * @param mixed $value
+     * @return bool
+     */
+    protected function isIdValue($value): bool
+    {
+        // ID harus bukan null, bukan array, dan nilai numerik
+        if (is_null($value) || is_array($value)) {
+            return false;
+        }
+
+        // Cek apakah nilai numerik (integer atau string numerik)
+        if (is_int($value)) {
+            return true;
+        }
+
+        // Jika string, cek apakah bisa dikonversi ke integer
+        if (is_string($value) && is_numeric($value)) {
+            return true;
+        }
+
+        return false;
     }
 }
