@@ -15,6 +15,7 @@ class SertifikasiPenghargaan extends Model
     protected $fillable = [
         'judul',
         'file_pdf',
+        'foto', // Tambahkan field foto
     ];
 
     // Mendefinisikan properti virtual yang tidak disimpan di database
@@ -35,6 +36,7 @@ class SertifikasiPenghargaan extends Model
         return [
             'judul' => 'required|string|max:255',
             'file_pdf' => 'required|file|mimes:pdf|max:5120', // Max 5MB
+            'foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048', // Tambahkan validasi untuk foto
         ];
     }
 
@@ -43,6 +45,7 @@ class SertifikasiPenghargaan extends Model
         return [
             'judul' => 'required|string|max:255',
             'file_pdf' => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
+            'foto' => 'nullable|file|mimes:jpg,jpeg,png|max:2048', // Tambahkan validasi untuk foto
         ];
     }
 
@@ -52,6 +55,7 @@ class SertifikasiPenghargaan extends Model
             'fields' => [
                 'judul' => 'string',
                 'file_pdf' => 'string (path to file)',
+                'foto' => 'string (path to file)', // Tambahkan dokumentasi field foto
                 'slug' => 'string (URL friendly version of judul)',
             ],
             'endpoints' => [
@@ -74,6 +78,7 @@ class SertifikasiPenghargaan extends Model
                                     'id' => 1,
                                     'judul' => 'Sertifikasi A',
                                     'file_pdf' => 'uploads/sertifikasi_penghargaan/20231001_1234.pdf',
+                                    'foto' => 'uploads/sertifikasi_penghargaan/20231001_1234.jpg', // Tambahkan contoh respons foto
                                     'created_at' => '2023-10-01T12:34:56.000000Z',
                                     'updated_at' => '2023-10-01T12:34:56.000000Z',
                                 ],
@@ -97,6 +102,7 @@ class SertifikasiPenghargaan extends Model
                     'payload' => [
                         'judul' => 'string',
                         'file_pdf' => 'file',
+                        'foto' => 'file', // Tambahkan payload foto
                     ],
                     'validations' => self::storeValidationRules(),
                     'response' => [
@@ -105,6 +111,7 @@ class SertifikasiPenghargaan extends Model
                             'id' => 1,
                             'judul' => 'Sertifikasi A',
                             'file_pdf' => 'uploads/sertifikasi_penghargaan/20231001_1234.pdf',
+                            'foto' => 'uploads/sertifikasi_penghargaan/20231001_1234.jpg', // Tambahkan contoh respons foto
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:34:56.000000Z',
                         ],
@@ -116,6 +123,7 @@ class SertifikasiPenghargaan extends Model
                     'payload' => [
                         'judul' => 'string',
                         'file_pdf' => 'file',
+                        'foto' => 'file', // Tambahkan payload foto
                     ],
                     'validations' => self::updateValidationRules(),
                     'response' => [
@@ -124,6 +132,7 @@ class SertifikasiPenghargaan extends Model
                             'id' => 1,
                             'judul' => 'Sertifikasi A (Updated)',
                             'file_pdf' => 'uploads/sertifikasi_penghargaan/20231001_1235.pdf',
+                            'foto' => 'uploads/sertifikasi_penghargaan/20231001_1235.jpg', // Tambahkan contoh respons foto
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:35:56.000000Z',
                         ],
@@ -151,6 +160,7 @@ class SertifikasiPenghargaan extends Model
                             'judul' => 'Sertifikasi A',
                             'slug' => 'sertifikasi-a',
                             'file_pdf' => 'uploads/sertifikasi_penghargaan/20231001_1234.pdf',
+                            'foto' => 'uploads/sertifikasi_penghargaan/20231001_1234.jpg', // Tambahkan contoh respons foto
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:34:56.000000Z',
                         ],

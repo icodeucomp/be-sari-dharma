@@ -48,7 +48,8 @@ class KontenSocialMedia extends Model
                     'payload' => null,
                     'validations' => null,
                     'query_params' => [
-                        'search' => 'string (for filtering by type)',
+                        'search' => 'string (untuk filter berdasarkan type)',
+                        'type' => 'string (untuk filter spesifik berdasarkan type: youtube atau instagram)',
                         'per_page' => 'integer (default: 10)',
                         'page' => 'integer (default: 1)', // added query param for page
                     ],
@@ -124,6 +125,22 @@ class KontenSocialMedia extends Model
                     'response' => [
                         'success' => true,
                         'message' => 'Data deleted successfully',
+                    ],
+                ],
+                'show' => [
+                    'url' => '/api/konten-social-media/{id}',
+                    'method' => 'GET',
+                    'payload' => null,
+                    'validations' => null,
+                    'response' => [
+                        'success' => true,
+                        'data' => [
+                            'id' => 1,
+                            'type' => 'youtube',
+                            'links' => ['https://youtube.com/example1', 'https://youtube.com/example2'],
+                            'created_at' => '2023-10-01T12:34:56.000000Z',
+                            'updated_at' => '2023-10-01T12:34:56.000000Z',
+                        ],
                     ],
                 ],
             ],

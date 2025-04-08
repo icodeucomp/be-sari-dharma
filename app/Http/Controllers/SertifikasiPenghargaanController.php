@@ -37,6 +37,14 @@ class SertifikasiPenghargaanController extends Controller
             $validated['file_pdf'] = $path;
         }
 
+        // Proses upload foto
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $filename = now()->format('Ymd_Hi') . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads/sertifikasi_penghargaan/foto', $filename, 'public');
+            $validated['foto'] = $path;
+        }
+
         $sertifikasi = SertifikasiPenghargaan::create($validated);
 
         return response()->json([
@@ -87,7 +95,7 @@ class SertifikasiPenghargaanController extends Controller
         if (!$sertifikasi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
         }
@@ -103,6 +111,18 @@ class SertifikasiPenghargaanController extends Controller
             $filename = now()->format('Ymd_Hi') . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('uploads/sertifikasi_penghargaan', $filename, 'public');
             $validated['file_pdf'] = $path;
+        }
+
+        // Proses upload dan update foto
+        if ($request->hasFile('foto')) {
+            if ($sertifikasi->foto && Storage::disk('public')->exists($sertifikasi->foto)) {
+                Storage::disk('public')->delete($sertifikasi->foto);
+            }
+
+            $file = $request->file('foto');
+            $filename = now()->format('Ymd_Hi') . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads/sertifikasi_penghargaan/foto', $filename, 'public');
+            $validated['foto'] = $path;
         }
 
         $sertifikasi->update($validated);
@@ -121,13 +141,19 @@ class SertifikasiPenghargaanController extends Controller
         if (!$sertifikasi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Data not found',
+                'message' => 'Data tidak ditemukan',
                 'data' => null
             ], 404);
         }
 
+        // Hapus file_pdf jika ada
         if ($sertifikasi->file_pdf && Storage::disk('public')->exists($sertifikasi->file_pdf)) {
             Storage::disk('public')->delete($sertifikasi->file_pdf);
+        }
+
+        // Hapus foto jika ada
+        if ($sertifikasi->foto && Storage::disk('public')->exists($sertifikasi->foto)) {
+            Storage::disk('public')->delete($sertifikasi->foto);
         }
 
         $sertifikasi->delete();
