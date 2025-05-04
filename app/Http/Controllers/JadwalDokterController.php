@@ -30,7 +30,7 @@ class JadwalDokterController extends Controller
         $perPage = $request->query('per_page', 10);
         $page = $request->query('page', 1);
 
-        $query = JadwalDokter::with(['dokter']); // Hapus with(['dokter', 'spesialis'])
+        $query = JadwalDokter::with(['dokter', 'spesialis']); // Hapus with(['dokter', 'spesialis'])
 
         if ($search) {
             $query->whereHas('dokter', function ($q) use ($search) {
