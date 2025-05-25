@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ArtikelKesehatan;
 use App\Helpers\Cryptor;
+use App\Models\MasterDokter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -137,6 +138,23 @@ class ArtikelKesehatanController extends Controller
             ], 400);
         }
 
+        $dokterTerkait = [];
+
+        foreach ($artikel->dokter_terkait as $dokterId) {
+            if ($dokterId === false) {
+                continue; // Lewati jika ID dokter tidak valid
+            }
+
+            $dokter = MasterDokter::find($dokterId);
+            if ($dokter) {
+                // Coba dekripsi ID dokter
+                $dokterTerkait[] = $dokter;
+            }
+        }
+
+        $artikel->dokter_terkait = $dokterTerkait;
+
+
         return response()->json([
             'success' => true,
             'data' => $artikel
@@ -172,6 +190,8 @@ class ArtikelKesehatanController extends Controller
             }
             $validated['dokter_terkait'] = $decryptedDokterIds;
         }
+
+        Log::debug('Validated data for update: ', $validated);
 
         if ($request->hasFile('foto')) {
             if ($artikel->foto && Storage::disk('public')->exists($artikel->foto)) {
