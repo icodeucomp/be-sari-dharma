@@ -94,34 +94,29 @@ class KontenSocialMediaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $konten = KontenSocialMedia::find($id);
-
-        if (!$konten) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data tidak ditemukan',
-                'data' => null
-            ], 404);
-        }
-
         $validated = $request->validate(KontenSocialMedia::updateValidationRules());
-
-        // Jika type berubah, cek apakah sudah ada data dengan type yang baru
-        if (isset($validated['type']) && $validated['type'] !== $konten->type) {
-            $existingContent = KontenSocialMedia::where('type', $validated['type'])->first();
-
-            if ($existingContent) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Type social media sudah ada',
-                    'data' => null
-                ], 422);
-            }
-        }
 
         DB::beginTransaction();
         try {
-            $konten->update($validated);
+            // hapus semua konten dengan type yang sama sebelum menambahkan yang baru
+            KontenSocialMedia::whereType($id)->delete();
+
+            // Validasi dan simpan setiap link
+            foreach ($request->links as $link) {
+                if (filter_var($link, FILTER_VALIDATE_URL) === false) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Link tidak valid: ' . $link,
+                        'data' => null
+                    ], 422);
+                }
+
+                $konten = KontenSocialMedia::create([
+                    'type' => $validated['type'],
+                    'links' => $link
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
