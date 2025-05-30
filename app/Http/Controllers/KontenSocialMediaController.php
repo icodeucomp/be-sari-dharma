@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KontenSocialMedia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KontenSocialMediaController extends Controller
 {
@@ -94,12 +95,13 @@ class KontenSocialMediaController extends Controller
 
     public function update(Request $request, $id)
     {
+        $type = $request->type;
         $validated = $request->validate(KontenSocialMedia::updateValidationRules());
 
         DB::beginTransaction();
         try {
             // hapus semua konten dengan type yang sama sebelum menambahkan yang baru
-            KontenSocialMedia::whereType($id)->delete();
+            KontenSocialMedia::whereType($type)->delete();
 
             // Validasi dan simpan setiap link
             foreach ($request->links as $link) {
