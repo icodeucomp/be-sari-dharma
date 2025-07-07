@@ -27,6 +27,7 @@ class JadwalDokterController extends Controller
         $search = $request->query('search');
         $dokterId = $request->query('dokter_id');
         $spesialisId = $request->query('spesialis_id');
+        $hari = $request->query('hari'); // Tambahkan query param hari
         $perPage = $request->query('per_page', 10);
         $page = $request->query('page', 1);
 
@@ -48,6 +49,13 @@ class JadwalDokterController extends Controller
             $query->where('spesialis_id', $decryptedSpesialisId);
         }
 
+        // Filter berdasarkan hari pada JSON jadwal_dokter
+        if ($hari) {
+            $query->where(function ($q) use ($hari) {
+                $q->where('jadwal_dokter', 'like', '%"hari":"' . $hari . '"%');
+            });
+        }
+
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
@@ -58,7 +66,6 @@ class JadwalDokterController extends Controller
 
     public function store(Request $request)
     {
-        Log::debug('Request data: ', $request->all());
         // Validasi awal tanpa exists check
         $validated = $request->validate(JadwalDokter::storeValidationRules());
 

@@ -146,9 +146,10 @@ class JadwalDokter extends Model
                     'payload' => null,
                     'validations' => null,
                     'query_params' => [
-                        'search' => 'string (for filtering by nama_dokter via relationship)',
-                        'dokter_id' => 'integer (for filtering by dokter_id)',
-                        'spesialis_id' => 'integer (for filtering by spesialis_id)',
+                        'search' => 'string (untuk filter berdasarkan nama_dokter via relasi)',
+                        'dokter_id' => 'string (ID terenkripsi untuk filter berdasarkan dokter)',
+                        'spesialis_id' => 'string (ID terenkripsi untuk filter berdasarkan spesialis)',
+                        'hari' => 'string (untuk filter berdasarkan hari pada jadwal_dokter, contoh: Senin)',
                         'per_page' => 'integer (default: 10)',
                         'page' => 'integer (default: 1)',
                     ],
