@@ -34,5 +34,6 @@ jobs:
           tools: composer
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan passport:keys --force
       - run: vendor/bin/pint --test
       - run: php artisan test
