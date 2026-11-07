@@ -75,6 +75,7 @@ return new class extends Migration
 
     /** Keys stored inside the JSON columns of doctor_schedules. */
     private const SCHEDULE_KEYS = ['hari' => 'day', 'jam_mulai' => 'start_time', 'jam_selesai' => 'end_time'];
+
     private const EDUCATION_KEYS = ['judul' => 'title', 'tahun_mulai' => 'start_year', 'tahun_selesai' => 'end_year'];
 
     /** Values stored in categories.flag. */
@@ -126,18 +127,19 @@ return new class extends Migration
     {
         DB::table($table)->orderBy('id')->each(function ($row) use ($table, $column, $map) {
             $items = json_decode($row->{$column} ?? '[]', true);
-            if (!is_array($items)) {
+            if (! is_array($items)) {
                 return;
             }
 
             $converted = array_map(function ($item) use ($map) {
-                if (!is_array($item)) {
+                if (! is_array($item)) {
                     return $item;
                 }
                 $result = [];
                 foreach ($item as $key => $value) {
                     $result[$map[$key] ?? $key] = $value;
                 }
+
                 return $result;
             }, $items);
 

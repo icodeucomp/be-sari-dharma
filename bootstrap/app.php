@@ -1,24 +1,28 @@
 <?php
 
+use App\Http\Middleware\DecryptIdRequestMiddleware;
+use App\Http\Middleware\EncryptIdResponseMiddleware;
+use App\Http\Middleware\RecursiveDecryptIdRequestMiddleware;
+use App\Http\Middleware\UniversalIdCryptorMiddleware;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'encrypt.response' => \App\Http\Middleware\EncryptIdResponseMiddleware::class,
-            'decrypt.request' => \App\Http\Middleware\DecryptIdRequestMiddleware::class,
-            'id.cryptor' => \App\Http\Middleware\UniversalIdCryptorMiddleware::class,
-            'recursive.decrypt' => \App\Http\Middleware\RecursiveDecryptIdRequestMiddleware::class,
+            'encrypt.response' => EncryptIdResponseMiddleware::class,
+            'decrypt.request' => DecryptIdRequestMiddleware::class,
+            'id.cryptor' => UniversalIdCryptorMiddleware::class,
+            'recursive.decrypt' => RecursiveDecryptIdRequestMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -27,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated',
-                    'data' => null
+                    'data' => null,
                 ], 401);
             }
         });
