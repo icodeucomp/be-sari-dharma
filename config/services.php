@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'cryptor' => [
+        'key' => env('CRYPTO_KEY'),
+        'iv' => env('CRYPTO_IV'),
+    ],
+
 ];

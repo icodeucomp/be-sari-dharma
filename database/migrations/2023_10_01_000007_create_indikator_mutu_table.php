@@ -11,7 +11,7 @@ class CreateIndikatorMutuTable extends Migration
         Schema::create('indikator_mutu', function (Blueprint $table) {
             $table->id();
             $table->string('judul');
-            $table->string('file_pdf')->nullable(); // Upload PDF
+            $table->string('file_pdf')->nullable();
             $table->timestamps();
         });
     }

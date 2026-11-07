@@ -90,7 +90,6 @@
 
 <body>
     <div class="sidebar w-64 overflow-y-auto bg-gray-100 p-4 h-full border-r border-gray-300">
-        <!-- Logo aplikasi -->
         <div class="mb-4 flex flex-col items-center">
             <img src="/img/logo.png" alt="App Logo" style="max-height: 80px;">
             <div class="text-lg font-bold mt-4">API Klinik Sari Dharma</div>
@@ -99,7 +98,6 @@
             </small>
         </div>
 
-        <!-- Token Input Section -->
         <div class="mb-6 p-3 bg-white rounded shadow-sm">
             <h3 class="text-sm font-semibold mb-2">API Token</h3>
             <input id="api-token" type="text" class="w-full border rounded p-2 text-xs mb-2"
@@ -111,11 +109,10 @@
     </div>
     <div class="content flex-1 p-6">
         <h1 class="text-2xl font-bold mb-4">API Documentation</h1>
-        <p class="mb-6">Berikut adalah dokumentasi untuk API yang tersedia di aplikasi <b>Klinik Sari Dharma</b>.</p>
+        <p class="mb-6">Documentation for the API available in the <b>Klinik Sari Dharma</b> application.</p>
         <div id="documentation" class="space-y-8">Loading...</div>
     </div>
 
-    <!-- Modal -->
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal">
             <h2 class="text-lg font-bold mb-4">Try API</h2>
@@ -132,28 +129,22 @@
                     <option value="DELETE">DELETE</option>
                 </select>
             </div>
-            <!-- Tambahan: Input untuk Headers (JSON) -->
             <div class="mb-4">
                 <label class="block font-medium">Headers (JSON)</label>
                 <textarea id="modal-headers" class="w-full border rounded p-2 text-sm" rows="3" placeholder='{"Authorization": "Bearer ..."}'></textarea>
             </div>
-            <!-- Body Tabs Container -->
             <div id="modal-body-container" class="mb-4 hidden">
                 <label class="block font-medium mb-2">Body</label>
-                <!-- Tabs -->
                 <div class="flex border-b mb-2">
                     <button id="json-tab"
                         class="py-2 px-4 mr-1 border-b-2 border-blue-500 font-medium text-sm">JSON</button>
                     <button id="formdata-tab" class="py-2 px-4 text-gray-500 font-medium text-sm">Form Data</button>
                 </div>
-                <!-- JSON Tab Content -->
                 <div id="json-tab-content">
                     <textarea id="modal-body-json" class="w-full border rounded p-2 text-sm" rows="5"></textarea>
                 </div>
-                <!-- FormData Tab Content -->
                 <div id="formdata-tab-content" class="hidden">
                     <div id="formdata-fields" class="space-y-2">
-                        <!-- Form data fields will be added here dynamically -->
                     </div>
                     <button id="add-field-btn" class="mt-2 bg-gray-200 text-gray-700 py-1 px-2 rounded text-sm">Add
                         Field</button>
@@ -172,7 +163,7 @@
 
     <script>
         let modalOverlay = document.getElementById('modal-overlay');
-        let modal = document.querySelector('.modal'); // Tambahkan ini
+        let modal = document.querySelector('.modal');
         let modalUrl = document.getElementById('modal-url');
         let modalMethod = document.getElementById('modal-method');
         let modalBodyContainer = document.getElementById('modal-body-container');
@@ -190,10 +181,8 @@
         let saveTokenBtn = document.getElementById('save-token');
         let modalHeaders = document.getElementById('modal-headers');
 
-        // Active tab for body (json or formdata)
         let activeBodyTab = 'json';
 
-        // Load token from localStorage on page load
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('api_token');
             if (savedToken) {
@@ -201,7 +190,6 @@
             }
         });
 
-        // Save token to localStorage
         saveTokenBtn.addEventListener('click', () => {
             const token = apiToken.value.trim();
             if (token) {
@@ -212,7 +200,6 @@
             }
         });
 
-        // Tab switching
         jsonTab.addEventListener('click', () => {
             jsonTab.classList.add('border-b-2', 'border-blue-500');
             jsonTab.classList.remove('text-gray-500');
@@ -237,7 +224,6 @@
             activeBodyTab = 'formdata';
         });
 
-        // Add form data field
         addFieldBtn.addEventListener('click', () => {
             const fieldRow = document.createElement('div');
             fieldRow.className = 'flex space-x-2 items-center';
@@ -267,7 +253,6 @@
                 fieldRow.remove();
             };
 
-            // Switch to file input when checkbox is checked
             fileCheckbox.addEventListener('change', (e) => {
                 const parent = e.target.parentElement;
                 const valueInput = parent.querySelector('input[type="text"]:nth-of-type(2)');
@@ -295,20 +280,17 @@
             formdataFields.appendChild(fieldRow);
         });
 
-        // Open modal
         function openModal(url, method, payload) {
             modalUrl.value = url;
             modalMethod.value = method;
             modalBodyJson.value = payload ? JSON.stringify(payload, null, 4) : '';
             modalBodyContainer.classList.toggle('hidden', method === 'GET' || method === 'DELETE');
 
-            // Reset form data fields
             formdataFields.innerHTML = '';
 
-            // If there's payload, add form fields for FormData tab
             if (payload && typeof payload === 'object') {
                 Object.entries(payload).forEach(([key, value]) => {
-                    addFieldBtn.click(); // Add a new field row
+                    addFieldBtn.click();
                     const lastRow = formdataFields.lastElementChild;
                     const inputs = lastRow.querySelectorAll('input[type="text"]');
                     if (inputs.length >= 2) {
@@ -318,21 +300,18 @@
                 });
             }
 
-            // Reset to JSON tab
             jsonTab.click();
 
             modalResponse.textContent = '';
             modalOverlay.classList.add('show');
-            modal.classList.add('show'); // Tambahkan ini
+            modal.classList.add('show');
         }
 
-        // Close modal
         function closeModal() {
             modalOverlay.classList.remove('show');
-            modal.classList.remove('show'); // Tambahkan ini
+            modal.classList.remove('show');
         }
 
-        // Send API request
         modalSend.addEventListener('click', () => {
             const url = modalUrl.value;
             const method = modalMethod.value;
@@ -342,7 +321,6 @@
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            // Ambil headers dari kotak input JSON (jika ada)
             if(modalHeaders.value.trim()){
                 try {
                     const customHeaders = JSON.parse(modalHeaders.value);
@@ -355,7 +333,6 @@
 
             let requestData = null;
 
-            // Prepare request data based on active tab
             if (activeBodyTab === 'json') {
                 try {
                     requestData = modalBodyJson.value ? JSON.parse(modalBodyJson.value) : null;
@@ -388,7 +365,6 @@
                 });
 
                 requestData = formData;
-                // Don't set Content-Type for FormData as axios will set it with boundary
             }
 
             axios({
@@ -406,22 +382,18 @@
                 });
         });
 
-        // Close modal when clicking outside
         modalOverlay.addEventListener('click', (e) => {
             if (e.target === modalOverlay) closeModal();
         });
 
-        // Close modal on button click
         modalClose.addEventListener('click', closeModal);
 
-        // Close modal on Esc key press
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
             }
         });
 
-        // Fetch available models dynamically (use token if available)
         const fetchModels = () => {
             const token = localStorage.getItem('api_token');
             const headers = {};
@@ -443,19 +415,16 @@
                         documentationContainer.innerHTML = '';
 
                         for (const [modelName, modelData] of Object.entries(data.data)) {
-                            // Add module link to sidebar
                             const moduleLink = document.createElement('div');
                             moduleLink.className = "mb-4";
 
-                            // Create title container with collapse functionality
                             const moduleTitleContainer = document.createElement('div');
                             moduleTitleContainer.className = "module-title";
                             moduleLink.appendChild(moduleTitleContainer);
 
-                            // Add collapse icon
                             const collapseIcon = document.createElement('span');
                             collapseIcon.className = "collapse-icon";
-                            collapseIcon.innerHTML = '&#9660;'; // Down arrow
+                            collapseIcon.innerHTML = '&#9660;';
 
                             const moduleTitle = document.createElement('a');
                             moduleTitle.href = `#${modelName}`;
@@ -465,25 +434,21 @@
                             moduleTitleContainer.appendChild(moduleTitle);
                             moduleTitleContainer.appendChild(collapseIcon);
 
-                            // Setup collapse functionality
-                            moduleLink.classList.add('collapsed'); // Start collapsed
+                            moduleLink.classList.add('collapsed');
 
                             moduleTitleContainer.addEventListener('click', (e) => {
                                 if (e.target !== moduleTitle) {
                                     e.preventDefault();
                                 }
-                                // Close all other open module links (submenu) by adding 'collapsed'
                                 const allModuleLinks = document.querySelectorAll('#sidebar-links > .mb-4');
                                 allModuleLinks.forEach(link => {
                                     if (link !== moduleLink) {
                                         link.classList.add('collapsed');
                                     }
                                 });
-                                // Toggle current submenu
                                 moduleLink.classList.toggle('collapsed');
                             });
 
-                            // Add submenu for endpoints
                             const submenu = document.createElement('div');
                             submenu.className = "submenu space-y-1";
 
@@ -497,7 +462,6 @@
                                 operationLink.className = "block text-gray-600 hover:text-blue-400";
                                 submenuItem.appendChild(operationLink);
 
-                                // Add Try button (separate from link)
                                 const tryButton = document.createElement('button');
                                 tryButton.textContent = 'Try';
                                 tryButton.className = "ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm";
@@ -514,7 +478,6 @@
                             moduleLink.appendChild(submenu);
                             sidebarLinks.appendChild(moduleLink);
 
-                            // Add documentation content
                             const modelSection = document.createElement('div');
                             modelSection.id = modelName;
                             modelSection.innerHTML = `
@@ -563,7 +526,6 @@
                 });
         };
 
-        // Initial fetch
         fetchModels();
     </script>
 </body>

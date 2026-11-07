@@ -16,7 +16,7 @@ class CreatePaketKesehatanTable extends Migration
             $table->boolean('promo')->default(false);
             $table->date('berlaku_sampai')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->string('foto')->nullable(); // Upload foto
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

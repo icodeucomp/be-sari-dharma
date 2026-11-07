@@ -14,7 +14,7 @@ class CreateEventCommunityTable extends Migration
             $table->foreign('kategori_id')->references('id')->on('master_kategori')->onDelete('cascade');
             $table->string('judul');
             $table->text('konten');
-            $table->string('foto')->nullable(); // Upload foto
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

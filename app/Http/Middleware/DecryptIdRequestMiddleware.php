@@ -9,34 +9,22 @@ use Illuminate\Support\Facades\Route;
 
 class DecryptIdRequestMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
     {
-        $cryptor = new Cryptor();
-
-        // Get the current route
         $route = Route::getCurrentRoute();
 
-        if ($route) {
-            // Check if the route has 'id' parameter
-            $parameters = $route->parameters();
+        if ($route && array_key_exists('id', $route->parameters())) {
+            $id = (new Cryptor)->decryptId($route->parameter('id'));
 
-            if (isset($parameters['id'])) {
-                // Decrypt the ID
-                $decryptedId = $cryptor->decrypt($parameters['id']);
-
-                // Replace the encrypted ID with the decrypted one
-                $route->setParameter('id', $decryptedId);
+            if ($id === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data not found',
+                    'data' => null,
+                ], 404);
             }
 
-            // You can add more resource types here
-            // For example: 'layanan_spesialis', 'karir', etc.
+            $route->setParameter('id', $id);
         }
 
         return $next($request);

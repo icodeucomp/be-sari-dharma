@@ -11,8 +11,6 @@ class CreateMasterKategoriTable extends Migration
         Schema::create('master_kategori', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            // "flag" berfungsi untuk menampung informasi kategori yang menunjuk halaman spesifik,
-            // misalnya: 'PaketKesehatan, ArtikelKesehatan, EventCommunity'
             $table->string('flag');
             $table->timestamps();
         });

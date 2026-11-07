@@ -3,54 +3,45 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AuthenticationController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
         ]);
 
-        $formData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ];
-
-        $user = User::create($formData);
+        $user = User::create($validated);
 
         return response()->json([
             'success' => true,
             'user' => $user,
-            'token' => $user->createToken('passportToken')->accessToken
-        ], 200);
+            'token' => $user->createToken('passportToken')->accessToken,
+        ], 201);
     }
 
     public function login(Request $request)
     {
-        $credentials = [
-            'email'    => $request->email,
-            'password' => $request->password
-        ];
+        $credentials = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::attempt($credentials)) {
-            $token = Auth::user()->createToken('passportToken')->accessToken;
+        $user = User::where('email', $credentials['email'])->first();
 
-            return response()->json([
-                'user' => Auth::user(),
-                'token' => $token
-            ], 200);
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            return response()->json(['error' => 'Unauthorised'], 401);
         }
 
         return response()->json([
-            'error' => 'Unauthorised'
-        ], 401);
+            'user' => $user,
+            'token' => $user->createToken('passportToken')->accessToken,
+        ], 200);
     }
 }

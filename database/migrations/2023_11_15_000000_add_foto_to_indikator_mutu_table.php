@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class AddFotoToIndikatorMutuTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::table('indikator_mutu', function (Blueprint $table) {
@@ -18,11 +13,6 @@ class AddFotoToIndikatorMutuTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::table('indikator_mutu', function (Blueprint $table) {

@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LayananUnggulan;
-use App\Models\LayananSpesialis;
-use App\Models\LayananFasilitas;
-use App\Models\JadwalDokter; // Tambahkan ini
-use App\Models\PaketKesehatan; // Tambahkan ini
-use App\Models\ArtikelKesehatan; // Tambahkan ini
-use App\Models\EventCommunity; // Tambahkan ini
-use App\Models\IndikatorMutu; // Tambahkan ini
-use App\Models\Karir; // Tambahkan ini
-use App\Models\KontenSocialMedia; // Tambahkan ini
-use App\Models\SertifikasiPenghargaan; // Tambahkan ini
-use App\Models\MasterKategori; // Tambahkan ini
-use App\Models\MasterDokter;
+use App\Models\Career;
+use App\Models\Category;
+use App\Models\CertificationAward;
+use App\Models\CommunityEvent;
+use App\Models\Doctor;
+use App\Models\DoctorSchedule;
+use App\Models\FacilityService;
+use App\Models\FeaturedService;
+use App\Models\HealthArticle;
+use App\Models\HealthPackage;
+use App\Models\QualityIndicator;
+use App\Models\SocialMediaContent;
+use App\Models\SpecialistService;
 
 class ApiDocumentationController extends Controller
 {
@@ -83,19 +83,19 @@ class ApiDocumentationController extends Controller
                     ],
                 ],
             ],
-            'LayananUnggulan' => LayananUnggulan::getApiDocumentation(),
-            'LayananSpesialis' => LayananSpesialis::getApiDocumentation(),
-            'LayananFasilitas' => LayananFasilitas::getApiDocumentation(),
-            'JadwalDokter' => JadwalDokter::getApiDocumentation(), // Tambahkan ini
-            'PaketKesehatan' => PaketKesehatan::getApiDocumentation(), // Sekarang menampilkan kategori_id
-            'ArtikelKesehatan' => ArtikelKesehatan::getApiDocumentation(), // Tambahkan ini
-            'EventCommunity' => EventCommunity::getApiDocumentation(), // Tambahkan ini
-            'IndikatorMutu' => IndikatorMutu::getApiDocumentation(), // Tambahkan ini
-            'Karir' => Karir::getApiDocumentation(), // Tambahkan ini
-            'KontenSocialMedia' => KontenSocialMedia::getApiDocumentation(), // Tambahkan ini
-            'SertifikasiPenghargaan' => SertifikasiPenghargaan::getApiDocumentation(), // Tambahkan ini
-            'MasterKategori' => MasterKategori::getApiDocumentation(), // Tambahkan ini
-            'MasterDokter' => MasterDokter::getApiDocumentation(),
+            'FeaturedService' => FeaturedService::getApiDocumentation(),
+            'SpecialistService' => SpecialistService::getApiDocumentation(),
+            'FacilityService' => FacilityService::getApiDocumentation(),
+            'DoctorSchedule' => DoctorSchedule::getApiDocumentation(),
+            'HealthPackage' => HealthPackage::getApiDocumentation(),
+            'HealthArticle' => HealthArticle::getApiDocumentation(),
+            'CommunityEvent' => CommunityEvent::getApiDocumentation(),
+            'QualityIndicator' => QualityIndicator::getApiDocumentation(),
+            'Career' => Career::getApiDocumentation(),
+            'SocialMediaContent' => SocialMediaContent::getApiDocumentation(),
+            'CertificationAward' => CertificationAward::getApiDocumentation(),
+            'Category' => Category::getApiDocumentation(),
+            'Doctor' => Doctor::getApiDocumentation(),
         ];
 
         return response()->json([

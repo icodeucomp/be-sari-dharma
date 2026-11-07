@@ -1,213 +1,159 @@
 <?php
 
 use App\Http\Controllers\Api\AuthenticationController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\LayananUnggulanController;
+use App\Http\Controllers\ApiDocumentationController;
+use App\Http\Controllers\CareerController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CertificationAwardController;
+use App\Http\Controllers\CommunityEventController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\DoctorScheduleController;
+use App\Http\Controllers\FacilityServiceController;
+use App\Http\Controllers\FeaturedServiceController;
+use App\Http\Controllers\HealthArticleController;
+use App\Http\Controllers\HealthPackageController;
+use App\Http\Controllers\QualityIndicatorController;
+use App\Http\Controllers\SocialMediaContentController;
+use App\Http\Controllers\SpecialistServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ApiDocumentationController;
-use App\Http\Controllers\ArtikelKesehatanController;
-use App\Http\Controllers\EventCommunityController;
-use App\Http\Controllers\IndikatorMutuController;
-use App\Http\Controllers\JadwalDokterController;
-use App\Http\Controllers\KarirController;
-use App\Http\Controllers\KontenSocialMediaController;
-use App\Http\Controllers\LayananSpesialisController;
-use App\Http\Controllers\LayananFasilitasController;
-use App\Http\Controllers\PaketKesehatanController;
-use App\Http\Controllers\SertifikasiPenghargaanController;
-use App\Http\Controllers\MasterKategoriController;
-use App\Http\Controllers\JobController;
-use App\Http\Controllers\MasterDokterController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
 
-Route::post('register', [AuthenticationController::class, 'register'])->name('register');
-Route::post('login', [AuthenticationController::class, 'login'])->name('login');
+Route::post('login', [AuthenticationController::class, 'login'])->middleware('throttle:10,1')->name('login');
 Route::get('api-documentation/models', [ApiDocumentationController::class, 'getAvailableModels']);
 
-// Route yang dapat diakses tanpa autentikasi (index dan show)
 Route::middleware(['encrypt.response'])->group(function () {
-    // LayananUnggulan
-    Route::get('layanan-unggulan', [LayananUnggulanController::class, 'index']);
+    Route::get('featured-services', [FeaturedServiceController::class, 'index']);
 
-    // LayananSpesialis
-    Route::get('layanan-spesialis', [LayananSpesialisController::class, 'index']);
+    Route::get('specialist-services', [SpecialistServiceController::class, 'index']);
 
-    // LayananFasilitas
-    Route::get('layanan-fasilitas', [LayananFasilitasController::class, 'index']);
+    Route::get('facility-services', [FacilityServiceController::class, 'index']);
 
-    // JadwalDokter
-    Route::get('jadwal-dokter', [JadwalDokterController::class, 'index']);
+    Route::get('doctor-schedules', [DoctorScheduleController::class, 'index']);
 
-    // PaketKesehatan
-    Route::get('paket-kesehatan', [PaketKesehatanController::class, 'index']);
+    Route::get('health-packages', [HealthPackageController::class, 'index']);
 
-    // ArtikelKesehatan
-    Route::get('artikel-kesehatan', [ArtikelKesehatanController::class, 'index']);
+    Route::get('health-articles', [HealthArticleController::class, 'index']);
 
-    // EventCommunity
-    Route::get('event-community', [EventCommunityController::class, 'index']);
+    Route::get('community-events', [CommunityEventController::class, 'index']);
 
-    // IndikatorMutu
-    Route::get('indikator-mutu', [IndikatorMutuController::class, 'index']);
+    Route::get('quality-indicators', [QualityIndicatorController::class, 'index']);
 
-    // Karir
-    Route::get('karir', [KarirController::class, 'index']);
+    Route::get('careers', [CareerController::class, 'index']);
 
-    // KontenSocialMedia
-    Route::get('konten-social-media', [KontenSocialMediaController::class, 'index']);
+    Route::get('social-media-contents', [SocialMediaContentController::class, 'index']);
 
-    // SertifikasiPenghargaan
-    Route::get('sertifikasi-penghargaan', [SertifikasiPenghargaanController::class, 'index']);
+    Route::get('certification-awards', [CertificationAwardController::class, 'index']);
 
-    // MasterKategori
-    Route::get('master-kategori', [MasterKategoriController::class, 'index']);
+    Route::get('categories', [CategoryController::class, 'index']);
 
-    // MasterDokter
-    Route::get('master-dokter', [MasterDokterController::class, 'index']);
+    Route::get('doctors', [DoctorController::class, 'index']);
 });
 
-// Route detail (show) yang dapat diakses tanpa autentikasi
 Route::middleware(['decrypt.request', 'encrypt.response'])->group(function () {
-    // LayananUnggulan dengan slug
-    Route::get('layanan-unggulan/{slug}/{id}', [LayananUnggulanController::class, 'show']);
+    Route::get('featured-services/{slug}/{id}', [FeaturedServiceController::class, 'show']);
 
-    // LayananSpesialis dengan slug
-    Route::get('layanan-spesialis/{slug}/{id}', [LayananSpesialisController::class, 'show']);
+    Route::get('specialist-services/{slug}/{id}', [SpecialistServiceController::class, 'show']);
 
-    // LayananFasilitas dengan slug
-    Route::get('layanan-fasilitas/{slug}/{id}', [LayananFasilitasController::class, 'show']);
+    Route::get('facility-services/{slug}/{id}', [FacilityServiceController::class, 'show']);
 
-    // JadwalDokter
-    Route::get('jadwal-dokter/{id}', [JadwalDokterController::class, 'show']);
+    Route::get('doctor-schedules/{id}', [DoctorScheduleController::class, 'show']);
 
-    // PaketKesehatan dengan slug
-    Route::get('paket-kesehatan/{slug}/{id}', [PaketKesehatanController::class, 'show']);
+    Route::get('health-packages/{slug}/{id}', [HealthPackageController::class, 'show']);
 
-    // ArtikelKesehatan dengan slug
-    Route::get('artikel-kesehatan/{slug}/{id}', [ArtikelKesehatanController::class, 'show']);
+    Route::get('health-articles/{slug}/{id}', [HealthArticleController::class, 'show']);
 
-    // EventCommunity dengan slug
-    Route::get('event-community/{slug}/{id}', [EventCommunityController::class, 'show']);
+    Route::get('community-events/{slug}/{id}', [CommunityEventController::class, 'show']);
 
-    // IndikatorMutu dengan slug
-    Route::get('indikator-mutu/{slug}/{id}', [IndikatorMutuController::class, 'show']);
+    Route::get('quality-indicators/{slug}/{id}', [QualityIndicatorController::class, 'show']);
 
-    // Karir dengan slug
-    Route::get('karir/{slug}/{id}', [KarirController::class, 'show']);
+    Route::get('careers/{slug}/{id}', [CareerController::class, 'show']);
 
-    // KontenSocialMedia
-    Route::get('konten-social-media/{id}', [KontenSocialMediaController::class, 'show']);
+    Route::get('social-media-contents/{id}', [SocialMediaContentController::class, 'show']);
 
-    // SertifikasiPenghargaan dengan slug
-    Route::get('sertifikasi-penghargaan/{slug}/{id}', [SertifikasiPenghargaanController::class, 'show']);
+    Route::get('certification-awards/{slug}/{id}', [CertificationAwardController::class, 'show']);
 
-    // MasterKategori
-    Route::get('master-kategori/{id}', [MasterKategoriController::class, 'show']);
+    Route::get('categories/{id}', [CategoryController::class, 'show']);
 
-    // MasterDokter
-    Route::get('master-dokter/{id}', [MasterDokterController::class, 'show']);
+    Route::get('doctors/{id}', [DoctorController::class, 'show']);
 });
 
-// Route yang memerlukan autentikasi (create, update, delete)
 Route::middleware('auth:api')->group(function () {
-    // Middleware encrypt.response dan recursive.decrypt untuk method POST (store)
-    Route::middleware(['encrypt.response', 'recursive.decrypt'])->group(function () {
-        // LayananUnggulan
-        Route::post('layanan-unggulan', [LayananUnggulanController::class, 'store']);
-
-        // LayananSpesialis
-        Route::post('layanan-spesialis', [LayananSpesialisController::class, 'store']);
-
-        // LayananFasilitas
-        Route::post('layanan-fasilitas', [LayananFasilitasController::class, 'store']);
-
-        // JadwalDokter
-        Route::post('jadwal-dokter', [JadwalDokterController::class, 'store']);
-
-        // PaketKesehatan
-        Route::post('paket-kesehatan', [PaketKesehatanController::class, 'store']);
-
-        // ArtikelKesehatan
-        Route::post('artikel-kesehatan', [ArtikelKesehatanController::class, 'store']);
-
-        // EventCommunity
-        Route::post('event-community', [EventCommunityController::class, 'store']);
-
-        // IndikatorMutu
-        Route::post('indikator-mutu', [IndikatorMutuController::class, 'store']);
-
-        // Karir
-        Route::post('karir', [KarirController::class, 'store']);
-
-        // KontenSocialMedia
-        Route::post('konten-social-media', [KontenSocialMediaController::class, 'store']);
-
-        // SertifikasiPenghargaan
-        Route::post('sertifikasi-penghargaan', [SertifikasiPenghargaanController::class, 'store']);
-
-        // MasterKategori
-        Route::post('master-kategori', [MasterKategoriController::class, 'store']);
-
-        // MasterDokter
-        Route::post('master-dokter', [MasterDokterController::class, 'store']);
+    Route::middleware(['recursive.decrypt', 'encrypt.response'])->group(function () {
+        Route::put('social-media-contents/{type}', [SocialMediaContentController::class, 'update'])
+            ->whereIn('type', ['youtube', 'instagram']);
     });
 
-    // Middleware decrypt.request dan encrypt.response untuk method yang membutuhkan id (update, delete)
+    Route::post('register', [AuthenticationController::class, 'register'])->name('register');
+
+    Route::middleware(['encrypt.response', 'recursive.decrypt'])->group(function () {
+        Route::post('featured-services', [FeaturedServiceController::class, 'store']);
+
+        Route::post('specialist-services', [SpecialistServiceController::class, 'store']);
+
+        Route::post('facility-services', [FacilityServiceController::class, 'store']);
+
+        Route::post('doctor-schedules', [DoctorScheduleController::class, 'store']);
+
+        Route::post('health-packages', [HealthPackageController::class, 'store']);
+
+        Route::post('health-articles', [HealthArticleController::class, 'store']);
+
+        Route::post('community-events', [CommunityEventController::class, 'store']);
+
+        Route::post('quality-indicators', [QualityIndicatorController::class, 'store']);
+
+        Route::post('careers', [CareerController::class, 'store']);
+
+        Route::post('social-media-contents', [SocialMediaContentController::class, 'store']);
+
+        Route::post('certification-awards', [CertificationAwardController::class, 'store']);
+
+        Route::post('categories', [CategoryController::class, 'store']);
+
+        Route::post('doctors', [DoctorController::class, 'store']);
+    });
+
     Route::middleware(['decrypt.request', 'recursive.decrypt', 'encrypt.response'])->group(function () {
-        // LayananUnggulan
-        Route::put('layanan-unggulan/{id}', [LayananUnggulanController::class, 'update']);
-        Route::delete('layanan-unggulan/{id}', [LayananUnggulanController::class, 'destroy']);
+        Route::put('featured-services/{id}', [FeaturedServiceController::class, 'update']);
+        Route::delete('featured-services/{id}', [FeaturedServiceController::class, 'destroy']);
 
-        // LayananSpesialis
-        Route::put('layanan-spesialis/{id}', [LayananSpesialisController::class, 'update']);
-        Route::delete('layanan-spesialis/{id}', [LayananSpesialisController::class, 'destroy']);
+        Route::put('specialist-services/{id}', [SpecialistServiceController::class, 'update']);
+        Route::delete('specialist-services/{id}', [SpecialistServiceController::class, 'destroy']);
 
-        // LayananFasilitas
-        Route::put('layanan-fasilitas/{id}', [LayananFasilitasController::class, 'update']);
-        Route::delete('layanan-fasilitas/{id}', [LayananFasilitasController::class, 'destroy']);
+        Route::put('facility-services/{id}', [FacilityServiceController::class, 'update']);
+        Route::delete('facility-services/{id}', [FacilityServiceController::class, 'destroy']);
 
-        // JadwalDokter
-        Route::put('jadwal-dokter/{id}', [JadwalDokterController::class, 'update']);
-        Route::delete('jadwal-dokter/{id}', [JadwalDokterController::class, 'destroy']);
+        Route::put('doctor-schedules/{id}', [DoctorScheduleController::class, 'update']);
+        Route::delete('doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy']);
 
-        // PaketKesehatan
-        Route::put('paket-kesehatan/{id}', [PaketKesehatanController::class, 'update']);
-        Route::delete('paket-kesehatan/{id}', [PaketKesehatanController::class, 'destroy']);
+        Route::put('health-packages/{id}', [HealthPackageController::class, 'update']);
+        Route::delete('health-packages/{id}', [HealthPackageController::class, 'destroy']);
 
-        // ArtikelKesehatan
-        Route::put('artikel-kesehatan/{id}', [ArtikelKesehatanController::class, 'update']);
-        Route::delete('artikel-kesehatan/{id}', [ArtikelKesehatanController::class, 'destroy']);
+        Route::put('health-articles/{id}', [HealthArticleController::class, 'update']);
+        Route::delete('health-articles/{id}', [HealthArticleController::class, 'destroy']);
 
-        // EventCommunity
-        Route::put('event-community/{id}', [EventCommunityController::class, 'update']);
-        Route::delete('event-community/{id}', [EventCommunityController::class, 'destroy']);
+        Route::put('community-events/{id}', [CommunityEventController::class, 'update']);
+        Route::delete('community-events/{id}', [CommunityEventController::class, 'destroy']);
 
-        // IndikatorMutu
-        Route::put('indikator-mutu/{id}', [IndikatorMutuController::class, 'update']);
-        Route::delete('indikator-mutu/{id}', [IndikatorMutuController::class, 'destroy']);
+        Route::put('quality-indicators/{id}', [QualityIndicatorController::class, 'update']);
+        Route::delete('quality-indicators/{id}', [QualityIndicatorController::class, 'destroy']);
 
-        // Karir
-        Route::put('karir/{id}', [KarirController::class, 'update']);
-        Route::delete('karir/{id}', [KarirController::class, 'destroy']);
+        Route::put('careers/{id}', [CareerController::class, 'update']);
+        Route::delete('careers/{id}', [CareerController::class, 'destroy']);
 
-        // KontenSocialMedia
-        Route::put('konten-social-media/{id}', [KontenSocialMediaController::class, 'update']);
-        Route::delete('konten-social-media/{id}', [KontenSocialMediaController::class, 'destroy']);
+        Route::delete('social-media-contents/{id}', [SocialMediaContentController::class, 'destroy']);
 
-        // SertifikasiPenghargaan
-        Route::put('sertifikasi-penghargaan/{id}', [SertifikasiPenghargaanController::class, 'update']);
-        Route::delete('sertifikasi-penghargaan/{id}', [SertifikasiPenghargaanController::class, 'destroy']);
+        Route::put('certification-awards/{id}', [CertificationAwardController::class, 'update']);
+        Route::delete('certification-awards/{id}', [CertificationAwardController::class, 'destroy']);
 
-        // MasterKategori
-        Route::put('master-kategori/{id}', [MasterKategoriController::class, 'update']);
-        Route::delete('master-kategori/{id}', [MasterKategoriController::class, 'destroy']);
+        Route::put('categories/{id}', [CategoryController::class, 'update']);
+        Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 
-        // MasterDokter
-        Route::put('master-dokter/{id}', [MasterDokterController::class, 'update']);
-        Route::delete('master-dokter/{id}', [MasterDokterController::class, 'destroy']);
+        Route::put('doctors/{id}', [DoctorController::class, 'update']);
+        Route::delete('doctors/{id}', [DoctorController::class, 'destroy']);
     });
 });

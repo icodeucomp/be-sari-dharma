@@ -2,46 +2,63 @@
 
 namespace App\Helpers;
 
-/**
- * Class untuk simple generate decrypt dan encryption
- */
 class Cryptor
 {
-    function encrypt_decrypt($action, $string): bool|string
+    private const METHOD = 'AES-256-CBC';
+
+    private function keyAndIv(): array
     {
-        $output = false;
+        $secretKey = (string) config('services.cryptor.key');
+        $secretIv = (string) config('services.cryptor.iv');
 
-        $encrypt_method = "AES-256-CBC";
-        $secret_key = env('CRYPTO_KEY');
-        $secret_iv = env('CRYPTO_IV');
+        return [
+            hash('sha256', $secretKey),
+            substr(hash('sha256', $secretIv), 0, 16),
+        ];
+    }
 
-        // hash
-        $key = hash('sha256', $secret_key);
+    public function encrypt(string|int $id): bool|string
+    {
+        [$key, $iv] = $this->keyAndIv();
 
-        // iv - encrypt method AES-256-CBC expects 16 bytes - else you will get a warning
-        $iv = substr(hash('sha256', $secret_iv), 0, 16);
+        $output = openssl_encrypt((string) $id, self::METHOD, $key, 0, $iv);
 
-        if ($action == 'encrypt') {
-            $output = openssl_encrypt($string, $encrypt_method, $key, 0, $iv);
-            $output = base64_encode($output);
-        } else if ($action == 'decrypt') {
-            $output = openssl_decrypt(base64_decode($string), $encrypt_method, $key, 0, $iv);
-            if (str_contains($output, '::')) {
-                $split = explode('::', $output);
-                $output = $split[0];
-            }
+        return $output === false ? false : base64_encode($output);
+    }
+
+    public function decrypt($encrypted): bool|string
+    {
+        if (! is_string($encrypted) || $encrypted === '') {
+            return false;
+        }
+
+        $decoded = base64_decode($encrypted, true);
+        if ($decoded === false) {
+            return false;
+        }
+
+        [$key, $iv] = $this->keyAndIv();
+
+        $output = openssl_decrypt($decoded, self::METHOD, $key, 0, $iv);
+        if ($output === false) {
+            return false;
+        }
+
+        if (str_contains($output, '::')) {
+            $output = explode('::', $output)[0];
         }
 
         return $output;
     }
 
-    public function encrypt(string|int $id): bool|string
+    public function decryptId($encrypted): ?int
     {
-        return $this->encrypt_decrypt('encrypt', $id);
-    }
+        $plain = $this->decrypt($encrypted);
 
-    public function decrypt($encrypted): bool|string
-    {
-        return $this->encrypt_decrypt('decrypt', $encrypted);
+        if ($plain === false || ! ctype_digit($plain) || (int) $plain < 1) {
+            return null;
+        }
+
+        return (int) $plain;
     }
 }

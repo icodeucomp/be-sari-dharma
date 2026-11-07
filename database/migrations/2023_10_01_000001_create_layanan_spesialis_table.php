@@ -13,8 +13,6 @@ class CreateLayananSpesialisTable extends Migration
             $table->string('nama_layanan');
             $table->text('deskripsi')->nullable();
             $table->string('icon');
-            // Kolom 'dokter' sudah tidak digunakan lagi karena sekarang menggunakan relasi
-            // $table->json('dokter');
             $table->timestamps();
         });
     }

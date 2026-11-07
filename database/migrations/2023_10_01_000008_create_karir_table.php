@@ -13,7 +13,7 @@ class CreateKarirTable extends Migration
             $table->string('divisi');
             $table->string('posisi');
             $table->string('link_pendaftaran');
-            $table->string('foto')->nullable(); // Upload foto
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

@@ -11,7 +11,7 @@ class CreateSertifikasiPenghargaanTable extends Migration
         Schema::create('sertifikasi_penghargaan', function (Blueprint $table) {
             $table->id();
             $table->string('judul');
-            $table->string('file_pdf')->nullable(); // Upload PDF
+            $table->string('file_pdf')->nullable();
             $table->timestamps();
         });
     }

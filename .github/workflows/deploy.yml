@@ -1,0 +1,85 @@
+# Ships main to the VPS. The build runs on the server (docker compose), so this
+# job only packs the source and hands it to /opt/saridharma/bin/deploy.sh,
+# which rolls back on a failed build or health check.
+#
+# Secrets: DEPLOY_SSH_KEY (key restricted on the server to `deploy <app>`),
+#          DEPLOY_KNOWN_HOSTS (ssh-keyscan of the VPS).
+name: CI and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  APP: backend
+  HOST: root@185.196.21.56
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: api_klinik_testing
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "3306"
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo_mysql, gd, bcmath
+          tools: composer
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: vendor/bin/pint --test
+      - run: php artisan test
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$DEPLOY_SSH_KEY" ] || [ -z "$DEPLOY_KNOWN_HOSTS" ]; then
+            echo "::error::Secret DEPLOY_SSH_KEY / DEPLOY_KNOWN_HOSTS is empty or not readable by this repo"
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          # Strip CRs: keys pasted from Windows otherwise fail with "invalid format".
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519
+          if ! ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null; then
+            echo "::error::DEPLOY_SSH_KEY is not a valid private key (include the BEGIN/END lines)"
+            exit 1
+          fi
+
+      - name: Deploy
+        run: |
+          git ls-files -z | tar --null -czf - -T - \
+            | ssh -o BatchMode=yes "$HOST" deploy "$APP"

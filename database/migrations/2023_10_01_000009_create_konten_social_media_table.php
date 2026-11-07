@@ -11,7 +11,7 @@ class CreateKontenSocialMediaTable extends Migration
         Schema::create('konten_social_media', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['youtube', 'instagram']);
-            $table->json('links'); // Menyimpan array link dalam format JSON
+            $table->json('links');
             $table->timestamps();
         });
     }
