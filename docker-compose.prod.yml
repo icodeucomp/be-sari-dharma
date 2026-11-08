@@ -4,6 +4,7 @@ services:
   app:
     build: .
     image: srdh-backend
+    container_name: srdh-backend
     restart: unless-stopped
     env_file: .env
     environment:
@@ -21,6 +22,7 @@ services:
 
   db:
     image: mysql:8.4
+    container_name: srdh-backend-db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
