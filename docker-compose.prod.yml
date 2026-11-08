@@ -3,6 +3,7 @@ name: saridharma-backend
 services:
   app:
     build: .
+    image: srdh-backend
     restart: unless-stopped
     env_file: .env
     environment:
