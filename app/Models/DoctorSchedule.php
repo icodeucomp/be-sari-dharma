@@ -17,7 +17,6 @@ class DoctorSchedule extends Model
         'doctor_background',
         'schedule',
         'education_career',
-        'photo',
     ];
 
     protected $casts = [
@@ -43,7 +42,6 @@ class DoctorSchedule extends Model
             'doctor_background' => 'nullable|string',
             'schedule' => 'required',
             'education_career' => 'required',
-            'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -124,7 +122,6 @@ class DoctorSchedule extends Model
                 'doctor_background' => 'string',
                 'schedule' => 'array of objects (day, start_time, end_time)',
                 'education_career' => 'array of objects (title, start_year, end_year)',
-                'photo' => 'string (path to file)',
             ],
             'endpoints' => [
                 'get_all' => [
@@ -158,7 +155,6 @@ class DoctorSchedule extends Model
                                         ['title' => 'Pendidikan A', 'start_year' => 2010, 'end_year' => 2014],
                                         ['title' => 'Career B', 'start_year' => 2015, 'end_year' => null],
                                     ],
-                                    'photo' => 'uploads/schedule/20231001_1234.jpg',
                                     'created_at' => '2023-10-01T12:34:56.000000Z',
                                     'updated_at' => '2023-10-01T12:34:56.000000Z',
                                 ],
@@ -189,7 +185,6 @@ class DoctorSchedule extends Model
                         'education_career' => [
                             ['title' => 'string', 'start_year' => 'integer', 'end_year' => 'integer'],
                         ],
-                        'photo' => 'file',
                     ],
                     'validations' => self::storeValidationRules(),
                     'response' => [
@@ -205,7 +200,6 @@ class DoctorSchedule extends Model
                             'education_career' => [
                                 ['title' => 'Pendidikan A', 'start_year' => 2010, 'end_year' => 2014],
                             ],
-                            'photo' => 'uploads/schedule/20231001_1234.jpg',
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:34:56.000000Z',
                         ],
@@ -224,7 +218,6 @@ class DoctorSchedule extends Model
                         'education_career' => [
                             ['title' => 'string', 'start_year' => 'integer', 'end_year' => 'integer'],
                         ],
-                        'photo' => 'file',
                     ],
                     'validations' => self::updateValidationRules(),
                     'response' => [
@@ -240,7 +233,6 @@ class DoctorSchedule extends Model
                             'education_career' => [
                                 ['title' => 'Pendidikan B', 'start_year' => 2015, 'end_year' => 2019],
                             ],
-                            'photo' => 'uploads/schedule/20231001_1235.jpg',
                             'created_at' => '2023-10-01T12:34:56.000000Z',
                             'updated_at' => '2023-10-01T12:35:56.000000Z',
                         ],
@@ -276,7 +268,6 @@ class DoctorSchedule extends Model
                                 ['title' => 'Pendidikan A', 'start_year' => 2010, 'end_year' => 2014],
                                 ['title' => 'Career B', 'start_year' => 2015, 'end_year' => null],
                             ],
-                            'photo' => 'uploads/schedule/20231001_1234.jpg',
                             'doctor' => [
                                 'id' => 1,
                                 'name' => 'Dr. John Doe',

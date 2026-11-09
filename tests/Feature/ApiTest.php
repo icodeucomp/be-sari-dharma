@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Helpers\Cryptor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -25,6 +27,12 @@ class ApiTest extends TestCase
         Passport::actingAs($user, [], 'api');
 
         return $user;
+    }
+
+    /** A real 1x1 PNG, so the tests do not need the GD extension. */
+    private function png(string $name): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent($name, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
     }
 
     private function enc(int $id): string
@@ -119,6 +127,36 @@ class ApiTest extends TestCase
         $this->getJson("/api/health-articles/healthy-living/{$id}")->assertOk()->assertJsonPath('data.title', 'Healthy Living');
         $this->getJson("/api/health-articles/wrong-slug/{$id}")->assertStatus(400);
         $this->deleteJson("/api/health-articles/{$id}")->assertOk();
+    }
+
+    public function test_doctor_photo_lives_on_the_doctor_and_schedules_only_reference_it(): void
+    {
+        Storage::fake('public');
+        $this->actAsUser();
+
+        $doctor = $this->post('/api/doctors', ['name' => 'dr. Ayu', 'photo' => $this->png('ayu.png')], ['Accept' => 'application/json'])
+            ->assertStatus(201)->json('data');
+        $this->assertStringStartsWith('uploads/doctor/', $doctor['photo']);
+        Storage::disk('public')->assertExists($doctor['photo']);
+
+        $specialist = $this->postJson('/api/specialist-services', ['name' => 'Cardiology', 'icon' => 'mdi', 'doctor_ids' => []])->json('data.id');
+
+        // A photo sent along with a schedule is ignored: nothing is stored under uploads/schedule.
+        $this->post('/api/doctor-schedules', [
+            'doctor_id' => $doctor['id'],
+            'specialist_id' => $specialist,
+            'schedule' => json_encode([['day' => 'Sabtu', 'start_time' => '08:00', 'end_time' => '12:00']]),
+            'education_career' => json_encode([['title' => 'UI', 'start_year' => 2010, 'end_year' => 2014]]),
+            'photo' => $this->png('ignored.png'),
+        ], ['Accept' => 'application/json'])->assertStatus(201);
+
+        $this->assertSame([], Storage::disk('public')->files('uploads/schedule'));
+
+        // The public list shows the doctor's photo through the doctor relation.
+        $this->getJson('/api/doctor-schedules')
+            ->assertOk()
+            ->assertJsonPath('data.data.0.doctor.photo', $doctor['photo'])
+            ->assertJsonMissingPath('data.data.0.photo');
     }
 
     public function test_updating_specialist_without_doctor_ids_keeps_schedule(): void

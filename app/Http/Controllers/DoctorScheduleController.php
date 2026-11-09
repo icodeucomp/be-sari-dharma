@@ -6,8 +6,6 @@ use App\Helpers\Cryptor;
 use App\Models\DoctorSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class DoctorScheduleController extends Controller
 {
@@ -94,13 +92,6 @@ class DoctorScheduleController extends Controller
             }
         }
 
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = now()->format('Ymd_His').'_'.Str::lower(Str::random(6)).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('uploads/schedule', $filename, 'public');
-            $validated['photo'] = $path;
-        }
-
         $exists = DoctorSchedule::where('doctor_id', $validated['doctor_id'])
             ->where('specialist_id', $validated['specialist_id'])
             ->exists();
@@ -127,10 +118,6 @@ class DoctorScheduleController extends Controller
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            if (isset($validated['photo']) && Storage::disk('public')->exists($validated['photo'])) {
-                Storage::disk('public')->delete($validated['photo']);
-            }
 
             return response()->json([
                 'success' => false,
@@ -217,17 +204,6 @@ class DoctorScheduleController extends Controller
             }
         }
 
-        if ($request->hasFile('photo')) {
-            if ($schedule->photo && Storage::disk('public')->exists($schedule->photo)) {
-                Storage::disk('public')->delete($schedule->photo);
-            }
-
-            $file = $request->file('photo');
-            $filename = now()->format('Ymd_His').'_'.Str::lower(Str::random(6)).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('uploads/schedule', $filename, 'public');
-            $validated['photo'] = $path;
-        }
-
         DB::beginTransaction();
         try {
             $schedule->update($validated);
@@ -265,10 +241,6 @@ class DoctorScheduleController extends Controller
 
         DB::beginTransaction();
         try {
-            if ($schedule->photo && Storage::disk('public')->exists($schedule->photo)) {
-                Storage::disk('public')->delete($schedule->photo);
-            }
-
             $schedule->delete();
 
             DB::commit();
