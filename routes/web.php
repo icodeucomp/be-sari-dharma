@@ -8,4 +8,4 @@ Route::get('/', function () {
 
 Route::get('/api-documentation', function () {
     return view('api-documentation');
-});
+})->middleware('docs.access');

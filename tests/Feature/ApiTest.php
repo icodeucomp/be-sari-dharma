@@ -62,6 +62,17 @@ class ApiTest extends TestCase
         $this->postJson('/api/register', $payload)->assertStatus(201);
     }
 
+    public function test_api_documentation_is_hidden_from_the_public(): void
+    {
+        // Anonymous visitors see a plain 404 for both the page and the JSON.
+        $this->get('/api-documentation')->assertNotFound();
+        $this->getJson('/api/api-documentation/models')->assertNotFound();
+
+        // A request with a valid token may read the JSON.
+        $this->actAsUser();
+        $this->getJson('/api/api-documentation/models')->assertOk();
+    }
+
     public function test_write_endpoints_require_authentication(): void
     {
         $this->postJson('/api/categories', ['name' => 'a', 'flag' => 'b'])->assertStatus(401);

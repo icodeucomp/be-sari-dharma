@@ -23,7 +23,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:api');
 
 Route::post('login', [AuthenticationController::class, 'login'])->middleware('throttle:10,1')->name('login');
-Route::get('api-documentation/models', [ApiDocumentationController::class, 'getAvailableModels']);
+
+Route::get('api-documentation/models', [ApiDocumentationController::class, 'getAvailableModels'])->middleware('docs.access');
 
 Route::middleware(['encrypt.response'])->group(function () {
     Route::get('featured-services', [FeaturedServiceController::class, 'index']);

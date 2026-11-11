@@ -3,6 +3,7 @@
 use App\Http\Middleware\DecryptIdRequestMiddleware;
 use App\Http\Middleware\EncryptIdResponseMiddleware;
 use App\Http\Middleware\RecursiveDecryptIdRequestMiddleware;
+use App\Http\Middleware\RestrictApiDocumentation;
 use App\Http\Middleware\UniversalIdCryptorMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'decrypt.request' => DecryptIdRequestMiddleware::class,
             'id.cryptor' => UniversalIdCryptorMiddleware::class,
             'recursive.decrypt' => RecursiveDecryptIdRequestMiddleware::class,
+            'docs.access' => RestrictApiDocumentation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
